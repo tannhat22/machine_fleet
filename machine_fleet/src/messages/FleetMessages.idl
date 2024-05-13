@@ -1,0 +1,63 @@
+module MachineFleetData
+{
+  module DeliveryMode_Constants
+  {
+    const unsigned long MODE_PICKUP = 0;
+    const unsigned long MODE_DROPOFF = 1;
+  };
+  module MachineMode_Constants
+  {
+    const unsigned long MODE_IDLE = 0;
+    const unsigned long MODE_RELEASE = 1;
+    const unsigned long MODE_CLAMP = 2;
+    const unsigned long MODE_ERROR = 200;
+  };
+  module StationMode_Constants
+  {
+    const unsigned long MODE_EMPTY = 0;
+    const unsigned long MODE_FILLED = 1;
+  };
+  struct DeliveryMode
+  {
+    unsigned long mode;
+  };
+  struct MachineMode
+  {
+    unsigned long mode;
+  };
+  struct StationMode
+  {
+    unsigned long mode;
+  };
+  struct DeliveryRequest
+  {
+    string machine_name;
+    string fleet_name;
+    string station_name;
+    string request_id;
+    DeliveryMode mode;
+  };
+  struct MachineRequest
+  {
+    string machine_name;
+    string fleet_name;
+    string request_id;
+    MachineMode mode;
+  };
+  struct MachineState
+  {
+    string machine_name;
+    string fleet_name;
+    string error_message;
+    string request_id;
+    MachineMode mode;
+  };
+  struct StationRequest
+  {
+    string machine_name;
+    string fleet_name;
+    string request_id;
+    string station_name;
+    StationMode mode;
+  };
+};

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>machine_fleet</name>
+  <version>1.0.0</version>
+  <description>Machine Fleet client and server library</description>
+  <maintainer email="nguyentannhat2298@gmail.com">Tan Nhat</maintainer>
+  <license>Apache 2.0</license>
+  <author email="nguyentannhat2298@gmail.com">Tan Nhat</author>
+
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
+  <depend>cyclonedds</depend>
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,6 @@
+uint32 MODE_IDLE=0
+uint32 MODE_RELEASE=1
+uint32 MODE_CLAMP=2
+uint32 MODE_ERROR=200
+
+uint32 mode
