@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'charger_server_ros2'
+package_name = 'machine_server_ros2'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'charger_server_ros2 = charger_server_ros2.charge_server:main',
+            'machine_server_ros2 = machine_server_ros2.machine_server:main',
         ],
     },
 )
