@@ -101,9 +101,9 @@ int main (int argc, char ** argv)
   msg->request_id = machine_fleet::common::dds_string_alloc_and_copy(request_id);
 
   if (machine_request == "release")
-    msg->mode.mode = MachineFleetData_MachineMode_Constants_MODE_RELEASE;
+    msg->mode.mode = MachineFleetData_MachineMode_Constants_MODE_PK_RELEASE;
   else if (machine_request == "uncharge")
-    msg->mode.mode = MachineFleetData_MachineMode_Constants_MODE_CLAMP;
+    msg->mode.mode = MachineFleetData_MachineMode_Constants_MODE_PK_CLAMP;
   
   printf ("=== [Publisher]  Writing : ");
   printf ("Message: machine_request %s\n", machine_request.c_str());

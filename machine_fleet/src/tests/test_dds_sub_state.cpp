@@ -88,9 +88,9 @@ int main(int argc, char** argv)
       std::cout << "mode: ";
       if (msg->mode.mode == MachineFleetData_MachineMode_Constants_MODE_IDLE)
         std::cout << "IDLE" << std::endl;
-      else if (msg->mode.mode == MachineFleetData_MachineMode_Constants_MODE_RELEASE)
+      else if (msg->mode.mode == MachineFleetData_MachineMode_Constants_MODE_PK_RELEASE)
         std::cout << "ASSIGNED" << std::endl;
-      else if (msg->mode.mode == MachineFleetData_MachineMode_Constants_MODE_CLAMP)
+      else if (msg->mode.mode == MachineFleetData_MachineMode_Constants_MODE_PK_CLAMP)
         std::cout << "CHARGING" << std::endl;
       else if (msg->mode.mode == MachineFleetData_MachineMode_Constants_MODE_ERROR)
         std::cout << "ERROR" << std::endl;

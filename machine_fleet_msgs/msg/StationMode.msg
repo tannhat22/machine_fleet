@@ -1,4 +1,4 @@
-uint32 MODE_EMPTY=1
-uint32 MODE_FILLED=2
+uint32 MODE_EMPTY=0
+uint32 MODE_FILLED=1
 
 uint32 mode

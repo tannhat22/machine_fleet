@@ -27,8 +27,10 @@ struct MachineMode
 {
   uint32_t mode;
   static const uint32_t MODE_IDLE = 0;
-  static const uint32_t MODE_RELEASE = 1;
-  static const uint32_t MODE_CLAMP = 2;
+  static const uint32_t MODE_PK_RELEASE = 1;
+  static const uint32_t MODE_PK_CLAMP = 2;
+  static const uint32_t MODE_DF_RELEASE = 3;
+  static const uint32_t MODE_DF_CLAMP = 4;
   static const uint32_t MODE_ERROR = 200;
 };
 

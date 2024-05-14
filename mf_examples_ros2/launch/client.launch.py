@@ -11,7 +11,7 @@ def generate_launch_description():
             package='machine_server_ros2',
             namespace='',
             executable='machine_server_ros2',
-            name='machine_service',
+            name='machine_service_rasp',
             output="screen",
             emulate_tty=True,
             respawn=True,
@@ -21,6 +21,8 @@ def generate_launch_description():
                     'PLC_Port_address': 8501,
                     'timeout': 10.0,
                     'frequency': 2.0,
+                    'dropoff_station_name': 'tramtha',
+                    'pickup_station_name': 'tramcap'
                 }
             ]
         ),
@@ -37,10 +39,10 @@ def generate_launch_description():
                 {
                     'fleet_name': 'amr_vdm',
                     'machine_name': 'nqvlm104',
-                    'machine_state_topic': '/machine_state',
-                    'delivery_request_topic': '/delivery_request',
-                    'station_request_topic': '/station_request',
-                    'machine_trigger_server_name': '/machine_server',
+                    'machine_state_topic': '/machine_state_rasp',
+                    'delivery_request_topic': '/delivery_request_rasp',
+                    'station_request_topic': '/station_request_rasp',
+                    'machine_trigger_server_name': '/machine_server_rasp',
                     'dds_domain': 62,
                     'dds_state_topic': 'machine_state',
                     'dds_delivery_request_topic': 'delivery_request',

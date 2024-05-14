@@ -153,8 +153,8 @@ void ClientNode::delivery_request_callback_fn(
   const machine_fleet_msgs::msg::DeliveryRequest::SharedPtr _msg)
 {
   machine_fleet::messages::DeliveryRequest new_delivery_request;
-  new_delivery_request.machine_name = _msg->machine_name;
-  new_delivery_request.fleet_name = _msg->fleet_name;
+  new_delivery_request.machine_name = client_node_config.machine_name;
+  new_delivery_request.fleet_name = client_node_config.fleet_name;
   new_delivery_request.request_id = _msg->request_id;
   new_delivery_request.station_name = _msg->station_name;
   new_delivery_request.mode.mode = _msg->mode.mode;
@@ -225,13 +225,25 @@ bool ClientNode::read_machine_request()
           machine_request.machine_name,
           machine_request.request_id))
   {
-    if ((machine_request.mode.mode == messages::MachineMode::MODE_RELEASE) ||
-        (machine_request.mode.mode == messages::MachineMode::MODE_CLAMP) )
+    if ((machine_request.mode.mode == messages::MachineMode::MODE_PK_CLAMP) ||
+        (machine_request.mode.mode == messages::MachineMode::MODE_PK_RELEASE) ||
+        (machine_request.mode.mode == messages::MachineMode::MODE_DF_CLAMP) ||
+        (machine_request.mode.mode == messages::MachineMode::MODE_DF_RELEASE) )
     {
-      if (machine_request.mode.mode == messages::MachineMode::MODE_RELEASE) {
-        RCLCPP_INFO(get_logger(), "received a RELEASE command.");
-      } else {
-        RCLCPP_INFO(get_logger(), "received a CLAMP command.");
+      if (machine_request.mode.mode == messages::MachineMode::MODE_PK_RELEASE) {
+        RCLCPP_INFO(get_logger(), "received a pickup RELEASE command.");
+      }
+      else if (machine_request.mode.mode == messages::MachineMode::MODE_PK_CLAMP)
+      {
+        RCLCPP_INFO(get_logger(), "received a pickup CLAMP command.");
+      }
+      else if (machine_request.mode.mode == messages::MachineMode::MODE_DF_RELEASE)
+      {
+        RCLCPP_INFO(get_logger(), "received a dropoff RELEASE command.");
+      }
+      else
+      {
+        RCLCPP_INFO(get_logger(), "received a dropoff CLAMP command.");
       }
       
       if (fields.machine_trigger_client &&

@@ -1,31 +1,38 @@
 import time
 import socket
+from uuid import uuid4
 import rclpy
 from rclpy.node import Node
 
-from charger_fleet_msgs.srv import Charger
-from charger_fleet_msgs.msg import ChargerState
+from machine_fleet_msgs.srv import MachineCart
+from machine_fleet_msgs.msg import DeliveryMode, DeliveryRequest, MachineState, MachineMode, StationMode, StationRequest 
 
-class ChargerService(Node):
+class MachineService(Node):
     def __init__(self):
-        super().__init__("charger_service")
+        super().__init__("machine_service")
         # Params:
         # Cấu hình các thông số quan trọng:
         self.declare_parameter('PLC_IP_address','192.168.1.1')
         self.declare_parameter('PLC_Port_address',8501)
         self.declare_parameter('timeout', 10.0)
         self.declare_parameter('frequency', 5.0)
+        self.declare_parameter('dropoff_station_name', 'station')
+        self.declare_parameter('pickup_station_name', 'station')
 
         self.IP_addres_PLC = self.get_parameter('PLC_IP_address').value
         self.port_addres_PLC = self.get_parameter('PLC_Port_address').value
         self.timeout = self.get_parameter('timeout').value
         self.frequency = self.get_parameter('frequency').value
+        self.dropoff_station_name = self.get_parameter('dropoff_station_name').value
+        self.pickup_station_name = self.get_parameter('pickup_station_name').value
 
 
         self.get_logger().info(f"PLC IP address: {self.IP_addres_PLC}")
         self.get_logger().info(f"PLC Port address: {self.port_addres_PLC}")
         self.get_logger().info(f"timeout: {self.timeout}")
         self.get_logger().info(f"frequency: {self.frequency}")
+        self.get_logger().info(f"dropoff_station_name: {self.dropoff_station_name}")
+        self.get_logger().info(f"pickup_station_name: {self.pickup_station_name}")
 
         self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._is_connected = False
@@ -34,19 +41,38 @@ class ChargerService(Node):
 
         # Device PLC:
         # Bits:
-        self.trigger_charge_bit = ['MR',100,'.U',1]
-        self.trigger_uncharge_bit = ['MR',101,'.U',1]
+        # MR600-602: DROPOFF:
+        #   600: alow input
+        #   601: alow output
+        #   602: Request dropoff
+        # MR603-605: PICKUP:
+        #   603: alow input
+        #   604: alow output        
+        #   605: Request pickup
+        self.machine_signal_bit = ['MR',600,'.U',6]
+        self.dropoff_in_location = ['MR',606,'.U',1]
+        self.dropoff_out_location = ['MR',607,'.U',1]
+        self.pickup_in_location = ['MR',608,'.U',1]
+        self.pickup_out_location = ['MR',609,'.U',1]
+        self.dropoff_station_state_bit = ['LR',1501,'.U',5]
+        self.pickup_station_state_bit = ['LR',1511,'.U',2]
 
-        # Registers:
-        self.charger_state_reg = ['DM',1000,'.U',1]
-        self.process_state_reg = ['DM',2000,'.U',1]
+        self.machine_error_bit = ['MR',2001,'.U',1]
 
         # Services server:
-        self.srv = self.create_service(Charger, "charger_server", self.charger_callback)
+        self.srv = self.create_service(MachineCart, "machine_server_rasp", self.machine_callback)
 
         # Publishers:
-        self.chargerModePub = self.create_publisher(ChargerState, "/charger_state", 10)
+        self.deliveryRequestPub = self.create_publisher(DeliveryRequest, "/delivery_request_rasp",10)
+        self.machineStatePub = self.create_publisher(MachineState, "/machine_state_rasp", 10)
 
+        # Subcribers:
+        self.stationRequestSub = self.create_subscription(StationRequest,"/station_request_rasp",self.station_request_callback,1)
+
+        # vars:
+        self.machine_mode = MachineMode.MODE_IDLE
+
+        # Timer:
         timer_period = 1 / self.frequency
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
@@ -136,59 +162,56 @@ class ChargerService(Node):
             print(e)
             return False
 
-    def charger_callback(self, request: Charger.Request, response: Charger.Response):
+    def machine_callback(self, request: MachineCart.Request, response: MachineCart.Response):
         try:
-            self.get_logger().info(f"Get request charge mode: {request.mode}")
-            if request.mode == Charger.Request.MODE_CHARGE:
-                if self.write_device(self.trigger_charge_bit[0],
-                                self.trigger_charge_bit[1],
-                                self.trigger_charge_bit[2],
-                                self.trigger_charge_bit[3],
-                                [1]):
-                    self.get_logger().info(f"writed bit CHARGE to PLC success")
-                
-            elif request.mode == Charger.Request.MODE_UNCHARGE:
-                if self.write_device(self.trigger_uncharge_bit[0],
-                                self.trigger_uncharge_bit[1],
-                                self.trigger_uncharge_bit[2],
-                                self.trigger_uncharge_bit[3],
-                                [1]):
-                    self.get_logger().info(f"writed bit UNCHARGE to PLC success")
+            self.get_logger().info(f"Get request machine mode: {request.mode}")
+            if request.mode == MachineCart.Request.MODE_PK_RELEASE:
+                self.write_device(self.pickup_in_location[0],
+                                  self.pickup_in_location[1],
+                                  self.pickup_in_location[2],
+                                  self.pickup_in_location[3],
+                                  [1])
+                self.get_logger().info(f"writed bit RELEASE pickup to PLC success")
+                while self.read_device(self.pickup_in_location[0],
+                                       self.pickup_in_location[1],
+                                       self.pickup_in_location[2],
+                                       self.pickup_in_location[3]):
+                    self.get_logger().info(f"Waiting machine pickup RELEASE!")
+                    time.sleep(0.5)
+
+            elif request.mode == MachineCart.Request.MODE_PK_CLAMP:
+                self.write_device(self.pickup_out_location[0],
+                                  self.pickup_out_location[1],
+                                  self.pickup_out_location[2],
+                                  self.pickup_out_location[3],
+                                  [1])
+                self.get_logger().info(f"writed bit CLAMP pickup to PLC success")
+
+            elif request.mode == MachineCart.Request.MODE_DF_RELEASE:
+                self.write_device(self.dropoff_in_location[0],
+                                  self.dropoff_in_location[1],
+                                  self.dropoff_in_location[2],
+                                  self.dropoff_in_location[3],
+                                  [1])
+                self.get_logger().info(f"writed bit RELEASE dropoff to PLC success")
+            
+            elif request.mode == MachineCart.Request.MODE_DF_CLAMP:
+                self.write_device(self.dropoff_out_location[0],
+                                  self.dropoff_out_location[1],
+                                  self.dropoff_out_location[2],
+                                  self.dropoff_out_location[3],
+                                  [1])
+                self.get_logger().info(f"writed bit CLAMP dropoff to PLC success")
             
             else:
                 self.get_logger().error(f"Request charge mode not supported!")
                 response.success = False
                 response.message = "Request charge mode not supported!"
+                self.machine_mode = MachineMode.MODE_IDLE
                 return response
             
-            process_state = 0
-            startTime = self.get_clock().now()
-            while process_state == 0:
-                process_state = self.read_device(self.process_state_reg[0],
-                                                 self.process_state_reg[1],
-                                                 self.process_state_reg[2],
-                                                 self.process_state_reg[3])[0]
-                durationTime = (self.get_clock().now() - startTime).nanoseconds*(10**(-9))
-                if durationTime >= self.timeout:
-                    self.get_logger().error(f"Timeout reaches!")
-                    break
-                time.sleep(0.5)
-                continue
-
-            if process_state == 1000:
-                self.get_logger().info(f"Request Success!")
-                response.success = True
-            else:
-                response.success = False
-                response.message = "PLC error!"
-
-            # Reset lại thanh ghi trạng thái thực thi request:
-            self.write_device(self.process_state_reg[0],
-                            self.process_state_reg[1],
-                            self.process_state_reg[2],
-                            self.process_state_reg[3],
-                            [0])
-
+            self.machine_mode = MachineMode.MODE_IDLE
+            response.success = True
             return response
         
         except:
@@ -196,30 +219,88 @@ class ChargerService(Node):
             response.message = "error undefined!"
             return response
 
-    def timer_callback(self):
-        stateData = self.read_device(self.charger_state_reg[0],
-                                     self.charger_state_reg[1],
-                                     self.charger_state_reg[2],
-                                     self.charger_state_reg[3])[0]
-        
-        msg = ChargerState()
-        msg.state = stateData
-        if stateData == 200:
-            msg.state = 200
-            msg.error_message = "Motor error"
-        elif stateData == 201:
-            msg.state = 200
-            msg.error_message = "Sensor detect robot no response"
-        elif stateData == 202:
-            msg.state = 200
-            msg.error_message = "Charger can't trigger "
+    def station_request_callback(self, msg: StationRequest):
+        stationName = msg.station_name
+        if stationName.find(self.dropoff_station_name) != -1:
+            idStation = int(stationName[len(self.dropoff_station_name):]) - 1
+            bitAddr = self.dropoff_station_state_bit[1] + idStation
+            if msg.mode.mode == StationMode.MODE_EMPTY:
+                self.write_device(self.dropoff_station_state_bit[0], bitAddr,
+                                  self.dropoff_station_state_bit, 1, [0])
+            elif msg.mode.mode == StationMode.MODE_FILLED:
+                self.write_device(self.dropoff_station_state_bit[0], bitAddr,
+                                  self.dropoff_station_state_bit, 1, [1])
+        elif stationName.find(self.pickup_station_name) != -1:
+            idStation = int(stationName[len(self.pickup_station_name):]) - 1
+            bitAddr = self.pickup_station_state_bit[1] + idStation
+            if msg.mode.mode == StationMode.MODE_EMPTY:
+                self.write_device(self.pickup_station_state_bit[0], bitAddr,
+                                  self.pickup_station_state_bit, 1, [0])
+            elif msg.mode.mode == StationMode.MODE_FILLED:
+                self.write_device(self.pickup_station_state_bit[0], bitAddr,
+                                  self.pickup_station_state_bit, 1, [1])
+        else:
+            self.get_logger().error("Not found station name match with dropoff or pickup station")
 
-        self.chargerModePub.publish(msg)
+    def timer_callback(self):
+        signalMachineData = self.read_device(self.machine_signal_bit[0],
+                                             self.machine_signal_bit[1],
+                                             self.machine_signal_bit[2],
+                                             self.machine_signal_bit[3])
+        
+        # Request dropoff:
+        if signalMachineData[2]:
+            stationState = self.read_device(self.pickup_station_state_bit[0],
+                                            self.pickup_station_state_bit[1],
+                                            self.pickup_station_state_bit[2],
+                                            self.pickup_station_state_bit[3])
+            self.machine_mode = MachineMode.MODE_DF_RELEASE
+            i = 1
+            for state in stationState:
+                if not state:
+                    msgDR = DeliveryRequest()
+                    msgDR.request_id = str(uuid4())[0:8]
+                    msgDR.station_name = f"{self.pickup_station_name}{i}"
+                    msgDR.mode.mode = DeliveryMode.MODE_DROPOFF
+                    self.deliveryRequestPub.publish(msgDR)
+                    self.write_device(self.machine_signal_bit[0],
+                                      self.machine_signal_bit[0]+2,
+                                      self.machine_signal_bit[0],
+                                      1,[0])
+                    break
+                i+=1
+        
+        # Request pickup:
+        elif signalMachineData[5]:
+            stationState = self.read_device(self.dropoff_station_state_bit[0],
+                                            self.dropoff_station_state_bit[1],
+                                            self.dropoff_station_state_bit[2],
+                                            self.dropoff_station_state_bit[3])
+            self.machine_mode = MachineMode.MODE_PK_RELEASE
+            i = 1
+            for state in stationState:
+                if not state:
+                    msgDR = DeliveryRequest()
+                    msgDR.request_id = str(uuid4())[0:8]
+                    msgDR.station_name = f"{self.dropoff_station_name}{i}"
+                    msgDR.mode.mode = DeliveryMode.MODE_PICKUP
+                    self.deliveryRequestPub.publish(msgDR)
+                    self.write_device(self.machine_signal_bit[0],
+                                      self.machine_signal_bit[0] + 5,
+                                      self.machine_signal_bit[0],
+                                      1,[0])
+                    break
+                i+=1
+        
+        msgMS = MachineState()
+        msgMS.mode = self.machine_mode
+        self.machineStatePub.publish(msgMS)
+
 
 
 def main(args=None):
     rclpy.init(args=args)
-    charger_service = ChargerService()
+    charger_service = MachineService()
     rclpy.spin(charger_service)
 
     # Destroy the node explicitly

@@ -8,8 +8,10 @@ module MachineFleetData
   module MachineMode_Constants
   {
     const unsigned long MODE_IDLE = 0;
-    const unsigned long MODE_RELEASE = 1;
-    const unsigned long MODE_CLAMP = 2;
+    const unsigned long MODE_PK_RELEASE = 1;
+    const unsigned long MODE_PK_CLAMP = 2;
+    const unsigned long MODE_DF_RELEASE = 3;
+    const unsigned long MODE_DF_CLAMP = 4;
     const unsigned long MODE_ERROR = 200;
   };
   module StationMode_Constants
