@@ -125,6 +125,7 @@ void ClientNode::start(Fields _fields)
     std::bind(&ClientNode::delivery_request_callback_fn, this, std::placeholders::_1));
 
   request_error = false;
+  machine_busy = false;
 
   RCLCPP_INFO(get_logger(), "starting update timer.");
   std::chrono::duration<double> update_period =
@@ -171,6 +172,8 @@ messages::MachineState ClientNode::get_machine_state()
   if (request_error) {
     machineState.mode.mode = messages::MachineMode::MODE_ERROR;
     machineState.error_message = "Request lasted was error!";
+  } else if (machine_busy) {
+    machineState.mode.mode = messages::MachineMode::MODE_DF_RELEASE;
   } else {
     ReadLock machine_state_lock(machine_state_mutex);
     machineState.mode.mode = current_machine_state.mode.mode;
@@ -228,27 +231,33 @@ bool ClientNode::read_machine_request()
     if ((machine_request.mode.mode == messages::MachineMode::MODE_PK_CLAMP) ||
         (machine_request.mode.mode == messages::MachineMode::MODE_PK_RELEASE) ||
         (machine_request.mode.mode == messages::MachineMode::MODE_DF_CLAMP) ||
-        (machine_request.mode.mode == messages::MachineMode::MODE_DF_RELEASE) )
+        (machine_request.mode.mode == messages::MachineMode::MODE_DF_RELEASE))
     {
+      WriteLock machine_state_lock(machine_state_mutex);
       if (machine_request.mode.mode == messages::MachineMode::MODE_PK_RELEASE) {
         RCLCPP_INFO(get_logger(), "received a pickup RELEASE command.");
+        current_machine_state.mode.mode = machine_fleet_msgs::msg::MachineMode::MODE_PK_RELEASE;
       }
       else if (machine_request.mode.mode == messages::MachineMode::MODE_PK_CLAMP)
       {
         RCLCPP_INFO(get_logger(), "received a pickup CLAMP command.");
+        current_machine_state.mode.mode = machine_fleet_msgs::msg::MachineMode::MODE_PK_CLAMP;
       }
       else if (machine_request.mode.mode == messages::MachineMode::MODE_DF_RELEASE)
       {
         RCLCPP_INFO(get_logger(), "received a dropoff RELEASE command.");
+        current_machine_state.mode.mode = machine_fleet_msgs::msg::MachineMode::MODE_DF_RELEASE;
       }
       else
       {
         RCLCPP_INFO(get_logger(), "received a dropoff CLAMP command.");
+        current_machine_state.mode.mode = machine_fleet_msgs::msg::MachineMode::MODE_DF_CLAMP;
       }
       
       if (fields.machine_trigger_client &&
         fields.machine_trigger_client->service_is_ready())
       {
+        machine_busy = true;
         using ServiceResponseFuture =
           rclcpp::Client<machine_fleet_msgs::srv::MachineCart>::SharedFuture;
         auto response_received_callback = [&](ServiceResponseFuture future) {
@@ -261,6 +270,7 @@ bool ClientNode::read_machine_request()
           } else {
             request_error = false;
           }
+          machine_busy = false;
         };
         auto machine_srv = std::make_shared<machine_fleet_msgs::srv::MachineCart::Request>();
         machine_srv->mode = machine_request.mode.mode;
@@ -268,11 +278,11 @@ bool ClientNode::read_machine_request()
         // sync call would block indefinelty as we are in a spinning node
         fields.machine_trigger_client->async_send_request(machine_srv, response_received_callback);
       }
-
     } else {
       RCLCPP_ERROR(get_logger(), "received an INVALID/UNSUPPORTED command: %d.",
               machine_request.mode.mode);
       request_error = true;
+      machine_busy = false;
     }
     
     WriteLock request_id_lock(request_id_mutex);

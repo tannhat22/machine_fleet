@@ -91,6 +91,7 @@ private:
   // indicating emergency within the fleet and not in RMF
   // TODO: figure out a better way to handle multiple triggered modes
   std::atomic<bool> request_error;
+  std::atomic<bool> machine_busy;
 
   messages::MachineState get_machine_state();
   

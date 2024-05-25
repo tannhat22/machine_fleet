@@ -22,7 +22,7 @@ def generate_launch_description():
                     'timeout': 10.0,
                     'frequency': 2.0,
                     'dropoff_station_name': 'tramtha',
-                    'pickup_station_name': 'tramcap'
+                    'pickup_station_name': 'tramlay'
                 }
             ]
         ),
