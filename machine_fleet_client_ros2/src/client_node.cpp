@@ -88,7 +88,7 @@ ClientNode::ClientNode(const rclcpp::NodeOptions & options)
         std::chrono::duration<double>(client_node_config.wait_timeout)))
     {
       RCLCPP_ERROR(
-        get_logger(), "timed out waiting for charging trigger server: %s",
+        get_logger(), "timed out waiting for machine trigger server: %s",
         client_node_config.machine_trigger_server_name.c_str());
       if (!rclcpp::ok()) {
         throw std::runtime_error("exited rclcpp while constructing client_node");

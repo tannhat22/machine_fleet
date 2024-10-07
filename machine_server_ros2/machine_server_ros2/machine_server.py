@@ -62,23 +62,23 @@ class MachineService(Node):
         self.dropoff_out_location = ['MR',607,'.U',1]
         self.pickup_in_location = ['MR',608,'.U',1]
         self.pickup_out_location = ['MR',609,'.U',1]
-        self.pickup_station_state_bit = ['LR',1501,'',5]
+        self.pickup_station_state_bit = ['LR',1501,'',4]
         self.dropoff_station_state_bit = ['LR',1511,'',2]
 
         self.machine_error_bit = ['MR',2001,'.U',1]
 
         # Callback groups:
-        cb_group = ReentrantCallbackGroup()
+        # cb_group = ReentrantCallbackGroup()
 
         # Services server:
-        self.srv = self.create_service(MachineCart, "machine_server_rasp", self.machine_callback, callback_group=cb_group)
+        self.srv = self.create_service(MachineCart, "machine_server_rasp", self.machine_callback)
 
         # Publishers:
         self.deliveryRequestPub = self.create_publisher(DeliveryRequest, "/delivery_request_rasp",10)
         self.machineStatePub = self.create_publisher(MachineState, "/machine_state_rasp", 10)
 
         # Subcribers:
-        self.create_subscription(StationRequest,"/station_request_rasp",self.station_request_callback,1, callback_group=cb_group)
+        self.create_subscription(StationRequest,"/station_request_rasp",self.station_request_callback,1)
         self.create_subscription(Empty,"/test_plc_pickup",self.test_callback,1)
 
 
@@ -177,6 +177,7 @@ class MachineService(Node):
 
     def machine_callback(self, request: MachineCart.Request, response: MachineCart.Response):
         try:
+            response.success = True
             self.get_logger().info(f"Get request machine mode: {request.mode}")
             if request.mode == MachineCart.Request.MODE_PK_RELEASE:
                 self.machine_mode = MachineMode.MODE_PK_RELEASE
@@ -228,11 +229,10 @@ class MachineService(Node):
                 self.get_logger().error(f"Request charge mode not supported!")
                 response.success = False
                 response.message = "Request charge mode not supported!"
-                self.machine_mode = MachineMode.MODE_IDLE
-                return response
+                # self.machine_mode = MachineMode.MODE_IDLE
+                # return response
             
             self.machine_mode = MachineMode.MODE_IDLE
-            response.success = True
             return response
         
         except:
@@ -265,56 +265,60 @@ class MachineService(Node):
 
     def timer_callback(self):
         signalMachineData = self.read_device(self.machine_request_bit[0],
-                                             self.machine_request_bit[1],
-                                             self.machine_request_bit[2],
-                                             self.machine_request_bit[3])
-        # Request dropoff:
-        if signalMachineData[0]:
-            stationState = self.read_device(self.pickup_station_state_bit[0],
-                                            self.pickup_station_state_bit[1],
-                                            self.pickup_station_state_bit[2],
-                                            self.pickup_station_state_bit[3])
-            # self.machine_mode = MachineMode.MODE_DF_RELEASE
-            i = 1
-            for state in stationState:
-                if state:
-                    msgDR = DeliveryRequest()
-                    msgDR.request_id = str(uuid4())[0:8]
-                    msgDR.station_name = f"{self.pickup_station_name}{i}"
-                    msgDR.mode.mode = DeliveryMode.MODE_DROPOFF
-                    self.deliveryRequestPub.publish(msgDR)
-                    self.write_device(self.machine_request_bit[0],
-                                      self.machine_request_bit[1],
-                                      self.machine_request_bit[2],
-                                      1,[0])
-                    break
-                i+=1
+                                            self.machine_request_bit[1],
+                                            self.machine_request_bit[2],
+                                            self.machine_request_bit[3])
+        try:
+            # Request dropoff:
+            if signalMachineData[0]:
+                stationState = self.read_device(self.pickup_station_state_bit[0],
+                                                self.pickup_station_state_bit[1],
+                                                self.pickup_station_state_bit[2],
+                                                self.pickup_station_state_bit[3])
+                # self.machine_mode = MachineMode.MODE_DF_RELEASE
+                i = 1
+                for state in stationState:
+                    if state:
+                        msgDR = DeliveryRequest()
+                        msgDR.request_id = str(uuid4())[0:8]
+                        msgDR.station_name = f"{self.pickup_station_name}{i}"
+                        msgDR.mode.mode = DeliveryMode.MODE_DROPOFF
+                        self.deliveryRequestPub.publish(msgDR)
+                        self.write_device(self.machine_request_bit[0],
+                                        self.machine_request_bit[1],
+                                        self.machine_request_bit[2],
+                                        1,[0])
+                        break
+                    i+=1
+            
+            # Request pickup:
+            elif signalMachineData[3]:
+                stationState = self.read_device(self.dropoff_station_state_bit[0],
+                                                self.dropoff_station_state_bit[1],
+                                                self.dropoff_station_state_bit[2],
+                                                self.dropoff_station_state_bit[3])
+                # self.machine_mode = MachineMode.MODE_PK_RELEASE
+                i = 1
+                for state in stationState:
+                    if not state:
+                        msgDR = DeliveryRequest()
+                        msgDR.request_id = str(uuid4())[0:8]
+                        msgDR.station_name = f"{self.dropoff_station_name}{i}"
+                        msgDR.mode.mode = DeliveryMode.MODE_PICKUP
+                        self.deliveryRequestPub.publish(msgDR)
+                        self.write_device(self.machine_request_bit[0],
+                                        self.machine_request_bit[1] + 3,
+                                        self.machine_request_bit[2],
+                                        1,[0])
+                        break
+                    i+=1
+            
+            msgMS = MachineState()
+            msgMS.mode.mode = self.machine_mode
+            self.machineStatePub.publish(msgMS)
         
-        # Request pickup:
-        elif signalMachineData[3]:
-            stationState = self.read_device(self.dropoff_station_state_bit[0],
-                                            self.dropoff_station_state_bit[1],
-                                            self.dropoff_station_state_bit[2],
-                                            self.dropoff_station_state_bit[3])
-            # self.machine_mode = MachineMode.MODE_PK_RELEASE
-            i = 1
-            for state in stationState:
-                if not state:
-                    msgDR = DeliveryRequest()
-                    msgDR.request_id = str(uuid4())[0:8]
-                    msgDR.station_name = f"{self.dropoff_station_name}{i}"
-                    msgDR.mode.mode = DeliveryMode.MODE_PICKUP
-                    self.deliveryRequestPub.publish(msgDR)
-                    self.write_device(self.machine_request_bit[0],
-                                      self.machine_request_bit[1] + 3,
-                                      self.machine_request_bit[2],
-                                      1,[0])
-                    break
-                i+=1
-        
-        msgMS = MachineState()
-        msgMS.mode.mode = self.machine_mode
-        self.machineStatePub.publish(msgMS)
+        except:
+            self.get_logger().error(f"Data bit: {signalMachineData}")
 
     def test_callback(self, msg: Empty):
         self.write_device(self.machine_request_bit[0],
@@ -326,27 +330,25 @@ class MachineService(Node):
 def main(args=None):
     rclpy.init(args=args)
     machine_service = MachineService()
-    executor = MultiThreadedExecutor()
-    executor.add_node(machine_service)
+    # executor = MultiThreadedExecutor()
+    # executor.add_node(machine_service)
 
-    try:
-        machine_service.get_logger().info('Beginning machine_service node, shut down with CTRL-C')
-        executor.spin()
-    except KeyboardInterrupt:
-        machine_service.get_logger().info('Keyboard interrupt, shutting down.\n')
-    machine_service.destroy_node()
-    rclpy.shutdown()
-
-    # rclpy.spin(machine_service)
-
-
-
-    # # Destroy the node explicitly
-    # # (optional - otherwise it will be done automatically
-    # # when the garbage collector destroys the node object)
+    # try:
+    #     machine_service.get_logger().info('Beginning machine_service node, shut down with CTRL-C')
+    #     executor.spin()
+    # except KeyboardInterrupt:
+    #     machine_service.get_logger().info('Keyboard interrupt, shutting down.\n')
     # machine_service.soc.close()
     # machine_service.destroy_node()
     # rclpy.shutdown()
+
+    rclpy.spin(machine_service)
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    machine_service.soc.close()
+    machine_service.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
