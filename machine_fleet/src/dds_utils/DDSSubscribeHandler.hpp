@@ -43,7 +43,7 @@ private:
   
   dds_entity_t reader;
   
-  std::array<std::shared_ptr<Message>, MaxSamplesNum> shared_msgs;
+  std::vector<std::shared_ptr<Message>> shared_msgs{MaxSamplesNum};
 
   void* samples[MaxSamplesNum];
 
