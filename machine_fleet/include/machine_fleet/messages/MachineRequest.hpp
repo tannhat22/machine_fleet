@@ -19,7 +19,7 @@
 #define MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__MACHINEREQUEST_HPP
 
 #include <string>
-#include "MachineMode.hpp"
+#include "DeviceMode.hpp"
 
 namespace machine_fleet {
 namespace messages {
@@ -27,9 +27,13 @@ namespace messages {
 struct MachineRequest
 {
   std::string machine_name;
-  std::string fleet_name;
+
+  uint8_t request_type;
+  static const uint8_t REQUEST_DISPENSER = 0;
+  static const uint8_t REQUEST_INGESTOR = 1;
+  
+  DeviceMode mode;
   std::string request_id;
-  MachineMode mode;
 };
 
 } // namespace messages

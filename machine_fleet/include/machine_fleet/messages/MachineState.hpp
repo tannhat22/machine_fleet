@@ -18,10 +18,10 @@
 #ifndef MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__MACHINESTATE_HPP
 #define MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__MACHINESTATE_HPP
 
-#include <string>
 #include <vector>
 
-#include "MachineMode.hpp"
+#include "DeviceMode.hpp"
+#include "StationState.hpp"
 
 namespace machine_fleet {
 namespace messages {
@@ -29,10 +29,23 @@ namespace messages {
 struct MachineState
 {
   std::string machine_name;
-  std::string fleet_name;
-  std::string error_message;
-  std::string request_id;
-  MachineMode mode;
+
+  uint8_t machine_mode;
+  static const uint8_t MODE_UNKNOWN = 0;
+  static const uint8_t MODE_HUMAN = 1;
+  static const uint8_t MODE_AGV = 2;
+  static const uint8_t MODE_ERROR = 3;
+  static const uint8_t MODE_EMERGENCY = 4;
+
+  bool request_pickup;
+  DeviceMode dispenser_mode;
+  std::string dispenser_request_id;
+
+  bool request_dropoff;
+  DeviceMode ingestor_mode;
+  std::string ingestor_request_id;
+
+  std::vector<StationState> station_states;
 };
 
 } // namespace messages

@@ -23,7 +23,6 @@
 #include <machine_fleet/ClientConfig.hpp>
 
 #include <machine_fleet/messages/MachineState.hpp>
-#include <machine_fleet/messages/DeliveryRequest.hpp>
 #include <machine_fleet/messages/MachineRequest.hpp>
 #include <machine_fleet/messages/StationRequest.hpp>
 
@@ -52,15 +51,6 @@ public:
   /// \return
   ///   True if machine state was successfully sent, false otherwise.
   bool send_machine_state(const messages::MachineState& new_machine_state);
-
-  /// Attempts to send a new delivery request to the machine fleet server, to be 
-  /// registered by the fleet management system.
-  ///
-  /// \param[in] new_delivery_request
-  ///   New delivery request to be sent out to the server
-  /// \return
-  ///   True if delivery request was successfully sent, false otherwise.
-  bool send_delivery_request(const messages::DeliveryRequest& new_delivery_request);
 
   /// Attempts to read and receive a new machine request from the machine fleet
   /// server, for commanding the machine client.

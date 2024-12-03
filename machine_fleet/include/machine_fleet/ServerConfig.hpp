@@ -19,20 +19,19 @@
 #define MACHINE_FLEET__INCLUDE__MACHINE_FLEET__SERVERCONFIG_HPP
 
 #include <string>
+#include <vector>
 
 namespace machine_fleet {
 
-struct ServerConfig
-{
-  int dds_domain = 52;
+struct ServerConfig {
+  int dds_domain = 62;
+  std::vector<std::string> machine_names = {};
   std::string dds_machine_state_topic = "machine_state";
-
-  // Client request -> server:
-  std::string dds_delivery_request_topic = "delivery_request";
-
-  // Server request -> client:
   std::string dds_machine_request_topic = "machine_request";
   std::string dds_station_request_topic = "station_request";
+
+  std::string get_namespaced_topic(const std::string &machine_name,
+                                   const std::string &base_topic) const;
 
   void print_config() const;
 };

@@ -39,15 +39,18 @@ Server::SharedPtr Server::make(const ServerConfig& _config)
     return nullptr;
   }
 
-  dds::DDSSubscribeHandler<MachineFleetData_MachineState, 10>::SharedPtr state_sub(
-      new dds::DDSSubscribeHandler<MachineFleetData_MachineState, 10>(
-          participant, &MachineFleetData_MachineState_desc,
-          _config.dds_machine_state_topic));
-
-  dds::DDSSubscribeHandler<MachineFleetData_DeliveryRequest, 10>::SharedPtr delivery_request_sub(
-      new dds::DDSSubscribeHandler<MachineFleetData_DeliveryRequest, 10>(
-          participant, &MachineFleetData_DeliveryRequest_desc,
-          _config.dds_delivery_request_topic));
+  // dds::DDSSubscribeHandler<MachineFleetData_MachineState, 10>::SharedPtr state_sub(
+  //     new dds::DDSSubscribeHandler<MachineFleetData_MachineState, 10>(
+  //         participant, &MachineFleetData_MachineState_desc,
+  //         _config.dds_machine_state_topic));
+  // Tạo mảng subscriber cho tất cả các topic robot state
+  std::vector<dds::DDSSubscribeHandler<MachineFleetData_MachineState>::SharedPtr> state_subs;
+  for (const auto& topic : _config.dds_machine_state_topics)
+  {
+    auto state_sub = std::make_shared<dds::DDSSubscribeHandler<MachineFleetData_MachineState>>(
+        participant, &MachineFleetData_MachineState_desc, topic);
+    state_subs.push_back(state_sub);
+  }
 
   dds::DDSPublishHandler<MachineFleetData_MachineRequest>::SharedPtr 
       machine_request_pub(
@@ -61,16 +64,19 @@ Server::SharedPtr Server::make(const ServerConfig& _config)
               participant, &MachineFleetData_StationRequest_desc,
               _config.dds_station_request_topic));
 
-  if (!state_sub->is_ready() ||
-      !delivery_request_sub->is_ready() ||
-      !machine_request_pub->is_ready() ||
+  for (const auto& state_sub : state_subs)
+  {
+    if (!state_sub->is_ready())
+      return nullptr; // Trả về nullptr nếu bất kỳ subscriber nào không sẵn sàng
+  }
+
+  if (!machine_request_pub->is_ready() ||
       !station_request_pub->is_ready())
     return nullptr;
 
   server->impl->start(ServerImpl::Fields{
       std::move(participant),
-      std::move(state_sub),
-      std::move(delivery_request_sub),
+      std::move(state_subs),
       std::move(machine_request_pub),
       std::move(station_request_pub)});
   return server;
@@ -88,12 +94,6 @@ bool Server::read_machine_states(
     std::vector<messages::MachineState>& _new_machine_states)
 {
   return impl->read_machine_states(_new_machine_states);
-}
-
-bool Server::read_delivery_requests(
-    std::vector<messages::DeliveryRequest>& _new_delivery_requests)
-{
-  return impl->read_delivery_requests(_new_delivery_requests);
 }
 
 bool Server::send_machine_request(const messages::MachineRequest& _machine_request)

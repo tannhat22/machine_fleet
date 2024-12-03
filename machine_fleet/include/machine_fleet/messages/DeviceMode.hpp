@@ -15,22 +15,26 @@
  *
  */
 
-#ifndef MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__STATIONMODE_HPP
-#define MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__STATIONMODE_HPP
+#ifndef MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__DEVICEMODE_HPP
+#define MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__DEVICEMODE_HPP
 
 #include <cstdint>
 
 namespace machine_fleet {
 namespace messages {
 
-struct StationMode
+struct DeviceMode
 {
-  uint32_t mode;
-  static const uint32_t MODE_EMPTY = 0;
-  static const uint32_t MODE_FILLED = 1;
+  uint8_t mode;
+  static const uint8_t MODE_IDLE = 0;
+  static const uint8_t MODE_ACCEPT_DOCKIN = 1;
+  static const uint8_t MODE_ROBOT_DOCKED_IN = 2;
+  static const uint8_t MODE_ACCEPT_DOCKOUT = 3;
+  static const uint8_t MODE_CANCEL = 4;
+  static const uint8_t MODE_ROBOT_ERROR = 5;
 };
 
 } // namespace messages
 } // namespace machine_fleet
 
-#endif // MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__STATIONMODE_HPP
+#endif // MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__DEVICEMODE_HPP

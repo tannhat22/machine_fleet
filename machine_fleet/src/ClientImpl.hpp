@@ -19,7 +19,6 @@
 #define MACHINE_FLEET__SRC__CLIENTIMPL_HPP
 
 #include <machine_fleet/messages/MachineState.hpp>
-#include <machine_fleet/messages/DeliveryRequest.hpp>
 #include <machine_fleet/messages/MachineRequest.hpp>
 #include <machine_fleet/messages/StationRequest.hpp>
 #include <machine_fleet/Client.hpp>
@@ -48,10 +47,6 @@ public:
     dds::DDSPublishHandler<MachineFleetData_MachineState>::SharedPtr
         state_pub;
 
-    /// DDS subscriber for delivery requests coming from the server
-    dds::DDSPublishHandler<MachineFleetData_DeliveryRequest>::SharedPtr 
-        delivery_request_pub;
-
     /// DDS subscriber for machine requests coming from the server
     dds::DDSSubscribeHandler<MachineFleetData_MachineRequest>::SharedPtr 
         machine_request_sub;
@@ -68,8 +63,6 @@ public:
   void start(Fields fields);
 
   bool send_machine_state(const messages::MachineState& new_machine_state);
-
-  bool send_delivery_request(const messages::DeliveryRequest& new_delivery_request);
 
   bool read_machine_request(messages::MachineRequest& machine_request);
 

@@ -1,4 +1,0 @@
-uint32 MODE_PICKUP=0
-uint32 MODE_DROPOFF=1
-
-uint32 mode

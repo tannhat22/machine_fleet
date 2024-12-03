@@ -41,37 +41,18 @@ void Server::ServerImpl::start(Fields _fields)
 bool Server::ServerImpl::read_machine_states(
     std::vector<messages::MachineState>& _new_machine_states)
 {
-  auto machine_states = fields.machine_state_sub->read();
-  if (!machine_states.empty())
+  _new_machine_states.clear();
+  for (const auto& sub : fields.machine_state_subs)
   {
-    _new_machine_states.clear();
-    for (size_t i = 0; i < machine_states.size(); ++i)
+    auto machine_states = sub->read();
+    if (!machine_states.empty())
     {
       messages::MachineState tmp_machine_state;
-      convert(*(machine_states[i]), tmp_machine_state);
-      _new_machine_states.push_back(tmp_machine_state);
+      convert(*(machine_states[0]), tmp_machine_state); 
+      _new_machine_states.push_back(tmp_machine_state); 
     }
-    return true;
   }
-  return false;
-}
-
-bool Server::ServerImpl::read_delivery_requests(
-    std::vector<messages::DeliveryRequest>& _new_delivery_requests)
-{
-  auto delivery_requests = fields.delivery_request_sub->read();
-  if (!delivery_requests.empty())
-  {
-    _new_delivery_requests.clear();
-    for (size_t i = 0; i < delivery_requests.size(); ++i)
-    {
-      messages::DeliveryRequest tmp_machine_state;
-      convert(*(delivery_requests[i]), tmp_machine_state);
-      _new_delivery_requests.push_back(tmp_machine_state);
-    }
-    return true;
-  }
-  return false;
+  return !_new_machine_states.empty(); // Trả về true nếu có ít nhất một trạng thái machine mới
 }
 
 bool Server::ServerImpl::send_machine_request(

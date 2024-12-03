@@ -24,119 +24,107 @@
 namespace machine_fleet {
 namespace messages {
 
-void convert(const DeliveryMode& _input, MachineFleetData_DeliveryMode& _output)
+void convert(const DeviceMode& _input, MachineFleetData_DeviceMode& _output)
 {
   // Consequently, machine fleet delivery modes need to be ordered similarly as 
   // delivery modes.
   _output.mode = _input.mode;
 }
 
-void convert(const MachineFleetData_DeliveryMode& _input, DeliveryMode& _output)
+void convert(const MachineFleetData_DeviceMode& _input, DeviceMode& _output)
 {
   // Consequently, machine fleet delivery modes need to be ordered similarly as 
   // delivery modes.
-  _output.mode = _input.mode;
-}
-
-void convert(const DeliveryRequest& _input, MachineFleetData_DeliveryRequest& _output)
-{
-  _output.machine_name = common::dds_string_alloc_and_copy(_input.machine_name);
-  _output.fleet_name = common::dds_string_alloc_and_copy(_input.fleet_name);
-  _output.station_name = common::dds_string_alloc_and_copy(_input.station_name);
-  _output.request_id = common::dds_string_alloc_and_copy(_input.request_id);
-  convert(_input.mode, _output.mode);
-}
-
-void convert(const MachineFleetData_DeliveryRequest& _input, DeliveryRequest& _output)
-{
-  _output.machine_name =  std::string(_input.machine_name);
-  _output.fleet_name = std::string(_input.fleet_name);
-  _output.station_name = std::string(_input.station_name);
-  _output.request_id = std::string(_input.request_id);
-  convert(_input.mode, _output.mode);
-}
-
-void convert(const MachineMode& _input, MachineFleetData_MachineMode& _output)
-{
-  // Consequently, machine fleet machine modes need to be ordered similarly as 
-  // machine modes.
-  _output.mode = _input.mode;
-}
-
-void convert(const MachineFleetData_MachineMode& _input, MachineMode& _output)
-{
-  // Consequently, machine fleet machine modes need to be ordered similarly as 
-  // machine modes.
-  _output.mode = _input.mode;
-}
-
-void convert(const MachineRequest& _input, MachineFleetData_MachineRequest& _output)
-{
-  _output.machine_name = common::dds_string_alloc_and_copy(_input.machine_name);
-  _output.fleet_name = common::dds_string_alloc_and_copy(_input.fleet_name);
-  _output.request_id = common::dds_string_alloc_and_copy(_input.request_id);
-  convert(_input.mode, _output.mode);
-}
-
-void convert(const MachineFleetData_MachineRequest& _input, MachineRequest& _output)
-{
-  _output.machine_name =  std::string(_input.machine_name);
-  _output.fleet_name = std::string(_input.fleet_name);
-  _output.request_id = std::string(_input.request_id);
-  convert(_input.mode, _output.mode);
-}
-
-void convert(const MachineState& _input, MachineFleetData_MachineState& _output)
-{
-  _output.machine_name = common::dds_string_alloc_and_copy(_input.machine_name);
-  _output.fleet_name = common::dds_string_alloc_and_copy(_input.fleet_name);
-  _output.error_message = common::dds_string_alloc_and_copy(_input.error_message);
-  _output.request_id = common::dds_string_alloc_and_copy(_input.request_id);
-  convert(_input.mode, _output.mode);
-}
-
-void convert(const MachineFleetData_MachineState& _input, MachineState& _output)
-{
-  _output.machine_name = std::string(_input.machine_name);
-  _output.error_message = std::string(_input.error_message);
-  _output.request_id = std::string(_input.request_id);
-  _output.fleet_name = std::string(_input.fleet_name);
-  convert(_input.mode, _output.mode);
-}
-
-void convert(const StationMode& _input, MachineFleetData_StationMode& _output)
-{
-  // Consequently, machine fleet station modes need to be ordered similarly as 
-  // station modes.
-  _output.mode = _input.mode;
-}
-
-void convert(const MachineFleetData_StationMode& _input, StationMode& _output)
-{
-  // Consequently, machine fleet station modes need to be ordered similarly as 
-  // station modes.
   _output.mode = _input.mode;
 }
 
 void convert(const StationRequest& _input, MachineFleetData_StationRequest& _output)
 {
   _output.machine_name = common::dds_string_alloc_and_copy(_input.machine_name);
-  _output.fleet_name = common::dds_string_alloc_and_copy(_input.fleet_name);
-  _output.request_id = common::dds_string_alloc_and_copy(_input.request_id);
   _output.station_name = common::dds_string_alloc_and_copy(_input.station_name);
-  convert(_input.mode, _output.mode);
+  _output.station_type = _input.station_type;
+  _output.mode = _input.mode;
 }
 
 void convert(const MachineFleetData_StationRequest& _input, StationRequest& _output)
 {
   _output.machine_name =  std::string(_input.machine_name);
-  _output.fleet_name = std::string(_input.fleet_name);
-  _output.request_id = std::string(_input.request_id);
   _output.station_name = std::string(_input.station_name);
-  convert(_input.mode, _output.mode);
+  _output.station_type = _input.station_type;
+  _output.mode = _input.mode;
 }
 
+void convert(const StationState& _input, MachineFleetData_StationState& _output)
+{
+  // Consequently, machine fleet station modes need to be ordered similarly as 
+  // station modes.
+  _output.station_name = common::dds_string_alloc_and_copy(_input.station_name);
+  _output.mode = _input.mode;
+}
 
+void convert(const MachineFleetData_StationState& _input, StationState& _output)
+{
+  // Consequently, machine fleet station modes need to be ordered similarly as 
+  // station modes.
+  _output.station_name = std::string(_input.station_name);
+  _output.mode = _input.mode;
+}
+
+void convert(const MachineRequest& _input, MachineFleetData_MachineRequest& _output)
+{
+  _output.machine_name = common::dds_string_alloc_and_copy(_input.machine_name);
+  _output.request_type = _input.request_type;
+  convert(_input.mode, _output.mode);
+  _output.request_id = common::dds_string_alloc_and_copy(_input.request_id);
+}
+
+void convert(const MachineFleetData_MachineRequest& _input, MachineRequest& _output)
+{
+  _output.machine_name =  std::string(_input.machine_name);
+  _output.request_type = _input.request_type;
+  convert(_input.mode, _output.mode);
+  _output.request_id = std::string(_input.request_id);
+}
+
+void convert(const MachineState& _input, MachineFleetData_MachineState& _output)
+{
+  _output.machine_name = common::dds_string_alloc_and_copy(_input.machine_name);
+  _output.machine_mode = _input.machine_mode;
+  _output.request_pickup = _input.request_pickup;
+  convert(_input.dispenser_mode, _output.dispenser_mode);
+  _output.dispenser_request_id = common::dds_string_alloc_and_copy(_input.dispenser_request_id);
+  _output.request_dropoff = _input.request_dropoff;
+  convert(_input.ingestor_mode, _output.ingestor_mode);
+  _output.ingestor_request_id = common::dds_string_alloc_and_copy(_input.ingestor_request_id);
+
+  size_t station_states_length = _input.station_states.size();
+  _output.station_states._maximum = static_cast<uint32_t>(station_states_length);
+  _output.station_states._length = static_cast<uint32_t>(station_states_length);
+  _output.station_states._buffer = 
+      MachineFleetData_MachineState_station_states_seq_allocbuf(station_states_length);
+  for (size_t i = 0; i < station_states_length; ++i)
+    convert(_input.station_states[i], _output.station_states._buffer[i]);
+}
+
+void convert(const MachineFleetData_MachineState& _input, MachineState& _output)
+{
+  _output.machine_name = std::string(_input.machine_name);
+  _output.machine_mode = _input.machine_mode;
+  _output.request_pickup = _input.request_pickup;
+  convert(_input.dispenser_mode, _output.dispenser_mode);
+  _output.dispenser_request_id = std::string(_input.dispenser_request_id);
+  _output.request_dropoff = _input.request_dropoff;
+  convert(_input.ingestor_mode, _output.ingestor_mode);
+  _output.ingestor_request_id = std::string(_input.ingestor_request_id);
+
+  _output.station_states.clear();
+  for (uint32_t i = 0; i < _input.station_states._length; ++i)
+  {
+    StationState tmp;
+    convert(_input.station_states._buffer[i], tmp);
+    _output.station_states.push_back(tmp);
+  }
+}
 
 } // namespace messages
 } // namespace machine_fleet

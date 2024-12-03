@@ -15,22 +15,25 @@
  *
  */
 
-#ifndef MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__DELIVERYMODE_HPP
-#define MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__DELIVERYMODE_HPP
+#ifndef MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__STATIONSTATE_HPP
+#define MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__STATIONSTATE_HPP
 
 #include <cstdint>
+#include <string>
 
 namespace machine_fleet {
 namespace messages {
 
-struct DeliveryMode
+struct StationState
 {
-  uint32_t mode;
-  static const uint32_t MODE_PICKUP = 0;
-  static const uint32_t MODE_DROPOFF = 1;
+  std::string station_name;
+  
+  uint8_t mode;
+  static const uint8_t MODE_EMPTY = 0;
+  static const uint8_t MODE_FILLED = 1;
 };
 
 } // namespace messages
 } // namespace machine_fleet
 
-#endif // MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__DELIVERYMODE_HPP
+#endif // MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__STATIONSTATE_HPP

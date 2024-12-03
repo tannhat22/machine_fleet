@@ -1,6 +1,7 @@
-string machine_name
 string fleet_name
-string station_name
-string request_id
+string robot_name
+uint32 start_time
 
-DeliveryMode mode
+string requester
+
+DeliveryParams[] delivery_params

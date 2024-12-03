@@ -21,13 +21,16 @@
 
 namespace machine_fleet {
 
-void ClientConfig::print_config() const
-{
+std::string ClientConfig::get_namespaced_topic(const std::string &base_topic) const {
+  return machine_name + "/" + base_topic;
+}
+
+void ClientConfig::print_config() const {
   printf("CLIENT-SERVER DDS CONFIGURATION\n");
   printf("  dds domain: %d\n", dds_domain);
+  printf("  machine name: %s\n", machine_name.c_str());
   printf("  TOPICS\n");
   printf("    machine state: %s\n", dds_state_topic.c_str());
-  printf("    delivery request: %s\n", dds_delivery_request_topic.c_str());
   printf("    machine request: %s\n", dds_machine_request_topic.c_str());
   printf("    station request: %s\n", dds_station_request_topic.c_str());
 }

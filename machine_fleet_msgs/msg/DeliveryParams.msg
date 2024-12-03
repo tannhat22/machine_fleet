@@ -1,0 +1,7 @@
+string pickup_place_name
+string pickup_dispenser
+DeliveryItem pickup_items
+
+string dropoff_place_name
+string dropoff_ingestor
+DeliveryItem dropoff_items

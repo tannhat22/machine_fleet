@@ -22,17 +22,14 @@
 
 namespace machine_fleet {
 
-struct ClientConfig
-{
-  int dds_domain = 52;
+struct ClientConfig {
+  int dds_domain = 62;
+  std::string machine_name = "default_robot";
   std::string dds_state_topic = "machine_state";
-
-  // Client request -> server:
-  std::string dds_delivery_request_topic = "delivery_request";
-
-  // Server request -> client:
   std::string dds_machine_request_topic = "machine_request";
   std::string dds_station_request_topic = "station_request";
+
+  std::string get_namespaced_topic(const std::string &base_topic) const;
 
   void print_config() const;
 };

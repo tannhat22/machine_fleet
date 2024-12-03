@@ -18,8 +18,8 @@
 #ifndef MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__STATIONREQUEST_HPP
 #define MACHINE_FLEET__INCLUDE__MACHINE_FLEET__MESSAGES__STATIONREQUEST_HPP
 
+#include <cstdint>
 #include <string>
-#include "StationMode.hpp"
 
 namespace machine_fleet {
 namespace messages {
@@ -27,10 +27,17 @@ namespace messages {
 struct StationRequest
 {
   std::string machine_name;
-  std::string fleet_name;
-  std::string request_id;
+
   std::string station_name;
-  StationMode mode;
+
+  uint8_t station_type;
+  static const uint8_t TYPE_PICKUP = 0;
+  static const uint8_t TYPE_DROPOFF = 1;
+
+  uint8_t mode;
+  static const uint8_t MODE_EMPTY = 0;
+  static const uint8_t MODE_FILLED = 1;
+
 };
 
 } // namespace messages

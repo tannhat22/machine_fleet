@@ -17,84 +17,79 @@
 extern "C" {
 #endif
 
-#define MachineFleetData_DeliveryMode_Constants_MODE_PICKUP 0
-#define MachineFleetData_DeliveryMode_Constants_MODE_DROPOFF 1
-#define MachineFleetData_MachineMode_Constants_MODE_IDLE 0
-#define MachineFleetData_MachineMode_Constants_MODE_PK_RELEASE 1
-#define MachineFleetData_MachineMode_Constants_MODE_PK_CLAMP 2
-#define MachineFleetData_MachineMode_Constants_MODE_DF_RELEASE 3
-#define MachineFleetData_MachineMode_Constants_MODE_DF_CLAMP 4
-#define MachineFleetData_MachineMode_Constants_MODE_ERROR 200
-#define MachineFleetData_StationMode_Constants_MODE_EMPTY 0
-#define MachineFleetData_StationMode_Constants_MODE_FILLED 1
+#define MachineFleetData_DeviceMode_Constants_MODE_IDLE 0
+#define MachineFleetData_DeviceMode_Constants_MODE_ACCEPT_DOCKIN 1
+#define MachineFleetData_DeviceMode_Constants_MODE_ROBOT_DOCKED_IN 2
+#define MachineFleetData_DeviceMode_Constants_MODE_ACCEPT_DOCKOUT 3
+#define MachineFleetData_DeviceMode_Constants_MODE_CANCEL 4
+#define MachineFleetData_DeviceMode_Constants_MODE_ROBOT_ERROR 5
+#define MachineFleetData_MachineRequest_Constants_REQUEST_DISPENSER 0
+#define MachineFleetData_MachineRequest_Constants_REQUEST_INGESTOR 1
+#define MachineFleetData_MachineState_Constants_MODE_UNKNOWN 0
+#define MachineFleetData_MachineState_Constants_MODE_HUMAN 1
+#define MachineFleetData_MachineState_Constants_MODE_AGV 2
+#define MachineFleetData_MachineState_Constants_MODE_ERROR 3
+#define MachineFleetData_MachineState_Constants_MODE_EMERGENCY 4
+#define MachineFleetData_StationRequest_Constants_TYPE_PICKUP 0
+#define MachineFleetData_StationRequest_Constants_TYPE_DROPOFF 1
+#define MachineFleetData_StationRequest_Constants_MODE_EMPTY 0
+#define MachineFleetData_StationRequest_Constants_MODE_FILLED 1
+#define MachineFleetData_StationState_Constants_MODE_EMPTY 0
+#define MachineFleetData_StationState_Constants_MODE_FILLED 1
 
 
-typedef struct MachineFleetData_DeliveryMode
+typedef struct MachineFleetData_DeviceMode
 {
   uint32_t mode;
-} MachineFleetData_DeliveryMode;
+} MachineFleetData_DeviceMode;
 
-extern const dds_topic_descriptor_t MachineFleetData_DeliveryMode_desc;
+extern const dds_topic_descriptor_t MachineFleetData_DeviceMode_desc;
 
-#define MachineFleetData_DeliveryMode__alloc() \
-((MachineFleetData_DeliveryMode*) dds_alloc (sizeof (MachineFleetData_DeliveryMode)));
+#define MachineFleetData_DeviceMode__alloc() \
+((MachineFleetData_DeviceMode*) dds_alloc (sizeof (MachineFleetData_DeviceMode)));
 
-#define MachineFleetData_DeliveryMode_free(d,o) \
-dds_sample_free ((d), &MachineFleetData_DeliveryMode_desc, (o))
-
-
-typedef struct MachineFleetData_MachineMode
-{
-  uint32_t mode;
-} MachineFleetData_MachineMode;
-
-extern const dds_topic_descriptor_t MachineFleetData_MachineMode_desc;
-
-#define MachineFleetData_MachineMode__alloc() \
-((MachineFleetData_MachineMode*) dds_alloc (sizeof (MachineFleetData_MachineMode)));
-
-#define MachineFleetData_MachineMode_free(d,o) \
-dds_sample_free ((d), &MachineFleetData_MachineMode_desc, (o))
+#define MachineFleetData_DeviceMode_free(d,o) \
+dds_sample_free ((d), &MachineFleetData_DeviceMode_desc, (o))
 
 
-typedef struct MachineFleetData_StationMode
-{
-  uint32_t mode;
-} MachineFleetData_StationMode;
-
-extern const dds_topic_descriptor_t MachineFleetData_StationMode_desc;
-
-#define MachineFleetData_StationMode__alloc() \
-((MachineFleetData_StationMode*) dds_alloc (sizeof (MachineFleetData_StationMode)));
-
-#define MachineFleetData_StationMode_free(d,o) \
-dds_sample_free ((d), &MachineFleetData_StationMode_desc, (o))
-
-
-typedef struct MachineFleetData_DeliveryRequest
+typedef struct MachineFleetData_StationRequest
 {
   char * machine_name;
-  char * fleet_name;
   char * station_name;
-  char * request_id;
-  MachineFleetData_DeliveryMode mode;
-} MachineFleetData_DeliveryRequest;
+  uint32_t station_type;
+  uint32_t mode;
+} MachineFleetData_StationRequest;
 
-extern const dds_topic_descriptor_t MachineFleetData_DeliveryRequest_desc;
+extern const dds_topic_descriptor_t MachineFleetData_StationRequest_desc;
 
-#define MachineFleetData_DeliveryRequest__alloc() \
-((MachineFleetData_DeliveryRequest*) dds_alloc (sizeof (MachineFleetData_DeliveryRequest)));
+#define MachineFleetData_StationRequest__alloc() \
+((MachineFleetData_StationRequest*) dds_alloc (sizeof (MachineFleetData_StationRequest)));
 
-#define MachineFleetData_DeliveryRequest_free(d,o) \
-dds_sample_free ((d), &MachineFleetData_DeliveryRequest_desc, (o))
+#define MachineFleetData_StationRequest_free(d,o) \
+dds_sample_free ((d), &MachineFleetData_StationRequest_desc, (o))
+
+
+typedef struct MachineFleetData_StationState
+{
+  char * station_name;
+  uint32_t mode;
+} MachineFleetData_StationState;
+
+extern const dds_topic_descriptor_t MachineFleetData_StationState_desc;
+
+#define MachineFleetData_StationState__alloc() \
+((MachineFleetData_StationState*) dds_alloc (sizeof (MachineFleetData_StationState)));
+
+#define MachineFleetData_StationState_free(d,o) \
+dds_sample_free ((d), &MachineFleetData_StationState_desc, (o))
 
 
 typedef struct MachineFleetData_MachineRequest
 {
   char * machine_name;
-  char * fleet_name;
+  uint32_t request_type;
+  MachineFleetData_DeviceMode mode;
   char * request_id;
-  MachineFleetData_MachineMode mode;
 } MachineFleetData_MachineRequest;
 
 extern const dds_topic_descriptor_t MachineFleetData_MachineRequest_desc;
@@ -105,14 +100,32 @@ extern const dds_topic_descriptor_t MachineFleetData_MachineRequest_desc;
 #define MachineFleetData_MachineRequest_free(d,o) \
 dds_sample_free ((d), &MachineFleetData_MachineRequest_desc, (o))
 
+typedef struct MachineFleetData_MachineState_station_states_seq
+{
+  uint32_t _maximum;
+  uint32_t _length;
+  MachineFleetData_StationState *_buffer;
+  bool _release;
+} MachineFleetData_MachineState_station_states_seq;
+
+#define MachineFleetData_MachineState_station_states_seq__alloc() \
+((MachineFleetData_MachineState_station_states_seq*) dds_alloc (sizeof (MachineFleetData_MachineState_station_states_seq)));
+
+#define MachineFleetData_MachineState_station_states_seq_allocbuf(l) \
+((MachineFleetData_StationState *) dds_alloc ((l) * sizeof (MachineFleetData_StationState)))
+
 
 typedef struct MachineFleetData_MachineState
 {
   char * machine_name;
-  char * fleet_name;
-  char * error_message;
-  char * request_id;
-  MachineFleetData_MachineMode mode;
+  uint32_t machine_mode;
+  bool request_pickup;
+  MachineFleetData_DeviceMode dispenser_mode;
+  char * dispenser_request_id;
+  bool request_dropoff;
+  MachineFleetData_DeviceMode ingestor_mode;
+  char * ingestor_request_id;
+  MachineFleetData_MachineState_station_states_seq station_states;
 } MachineFleetData_MachineState;
 
 extern const dds_topic_descriptor_t MachineFleetData_MachineState_desc;
@@ -122,24 +135,6 @@ extern const dds_topic_descriptor_t MachineFleetData_MachineState_desc;
 
 #define MachineFleetData_MachineState_free(d,o) \
 dds_sample_free ((d), &MachineFleetData_MachineState_desc, (o))
-
-
-typedef struct MachineFleetData_StationRequest
-{
-  char * machine_name;
-  char * fleet_name;
-  char * request_id;
-  char * station_name;
-  MachineFleetData_StationMode mode;
-} MachineFleetData_StationRequest;
-
-extern const dds_topic_descriptor_t MachineFleetData_StationRequest_desc;
-
-#define MachineFleetData_StationRequest__alloc() \
-((MachineFleetData_StationRequest*) dds_alloc (sizeof (MachineFleetData_StationRequest)));
-
-#define MachineFleetData_StationRequest_free(d,o) \
-dds_sample_free ((d), &MachineFleetData_StationRequest_desc, (o))
 
 #ifdef __cplusplus
 }

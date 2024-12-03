@@ -1,5 +1,11 @@
-string machine_name
-string fleet_name
-string request_id
+builtin_interfaces/Time time
 
-MachineMode mode
+string machine_name
+
+uint8 request_type
+uint8 REQUEST_DISPENSER=0
+uint8 REQUEST_INGESTOR=1
+
+DeviceMode request_mode
+
+string request_id

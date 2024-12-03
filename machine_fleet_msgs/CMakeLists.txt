@@ -13,14 +13,16 @@ find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/DeliveryMode.msg"
+  "msg/DeliveryItem.msg"
+  "msg/DeliveryParams.msg"
   "msg/DeliveryRequest.msg"
+  "msg/DeviceMode.msg"
   "msg/FleetMachineState.msg"
-  "msg/MachineMode.msg"
+  "msg/FleetStationState.msg"
   "msg/MachineRequest.msg"
   "msg/MachineState.msg"
-  "msg/StationMode.msg"
   "msg/StationRequest.msg"
+  "msg/StationState.msg"
   "srv/MachineCart.srv"
   DEPENDENCIES std_msgs # Add packages that above messages depend on
 )

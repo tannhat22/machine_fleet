@@ -24,7 +24,6 @@
 #include <machine_fleet/ServerConfig.hpp>
 
 #include <machine_fleet/messages/MachineState.hpp>
-#include <machine_fleet/messages/DeliveryRequest.hpp>
 #include <machine_fleet/messages/MachineRequest.hpp>
 #include <machine_fleet/messages/StationRequest.hpp>
 
@@ -53,16 +52,6 @@ public:
   /// \return
   ///   True if new machine states were received, false otherwise.
   bool read_machine_states(std::vector<messages::MachineState>& new_machine_states);
-
-  /// Attempts to read new incoming delivery requests sent by machine fleet clients
-  /// over DDS.
-  ///
-  /// \param[out] new_delivery_requests
-  ///   A vector of new incoming delivery requests sent by clients to update the
-  ///   fleet management system.
-  /// \return
-  ///   True if new delivery requests were received, false otherwise.
-  bool read_delivery_requests(std::vector<messages::DeliveryRequest>& new_delivery_states);
 
   /// Attempts to send a new machine request to all the clients. Clients are in
   /// charge to identify if requests are targetted towards them.

@@ -21,18 +21,17 @@
 
 #include "../messages/FleetMessages.h"
 
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
   dds_entity_t participant;
   dds_entity_t topic;
   dds_entity_t reader;
 
-  MachineFleetData_MachineState* msg;
-  void* samples[1];
+  MachineFleetData_MachineState *msg;
+  void *samples[1];
   dds_sample_info_t infos[1];
 
   dds_return_t rc;
-  dds_qos_t* qos;
+  dds_qos_t *qos;
 
   (void)argc;
   (void)argv;
@@ -43,30 +42,28 @@ int main(int argc, char** argv)
     DDS_FATAL("dds_create_participant: %s\n", dds_strretcode(-participant));
 
   /* Create a Topic. */
-  topic = dds_create_topic (
-    participant, &MachineFleetData_MachineState_desc, 
-    "machine_state", NULL, NULL);
+  topic = dds_create_topic(participant, &MachineFleetData_MachineState_desc, "machine_state", NULL,
+                           NULL);
   if (topic < 0)
     DDS_FATAL("dds_create_topic: %s\n", dds_strretcode(-topic));
 
   /* Create a best effort Reader (UDP) */
-  qos = dds_create_qos ();
+  qos = dds_create_qos();
   dds_qset_reliability(qos, DDS_RELIABILITY_BEST_EFFORT, 0);
-  reader = dds_create_reader (participant, topic, qos, NULL);
+  reader = dds_create_reader(participant, topic, qos, NULL);
   if (reader < 0)
     DDS_FATAL("dds_create_reader: %s\n", dds_strretcode(-reader));
   dds_delete_qos(qos);
 
-  printf ("\n=== [Subscriber] Waiting for a sample ...\n");
-  fflush (stdout);
+  printf("\n=== [Subscriber] Waiting for a sample ...\n");
+  fflush(stdout);
 
   /* Initialize sample buffer, by pointing the void pointer within
    * the buffer array to a valid sample memory location. */
   samples[0] = MachineFleetData_MachineState__alloc();
 
   /* Poll until data has been read. */
-  while (true)
-  {
+  while (true) {
     /* Do the actual read.
      * The return value contains the number of read samples. */
     rc = dds_take(reader, samples, infos, 1, 1);
@@ -74,40 +71,32 @@ int main(int argc, char** argv)
       DDS_FATAL("dds_read: %s\n", dds_strretcode(-rc));
 
     /* Check if we read some data and it is valid. */
-    if ((rc > 0) && (infos[0].valid_data))
-    {
+    if ((rc > 0) && (infos[0].valid_data)) {
       /* Print Message. */
-      msg = (MachineFleetData_MachineState*)samples[0];
+      msg = (MachineFleetData_MachineState *)samples[0];
       std::cout << "=== [Subscriber] Received : " << std::endl;
       std::cout << "machine_name: " << msg->machine_name << std::endl;
-      std::cout << "fleet_name: " << msg->fleet_name << std::endl;
-      std::cout << "error_message: " << msg->error_message << std::endl;
-      std::string request_id(msg->request_id);
-      std::cout << "request_id: " << request_id << std::endl;
-      
-      std::cout << "mode: ";
-      if (msg->mode.mode == MachineFleetData_MachineMode_Constants_MODE_IDLE)
-        std::cout << "IDLE" << std::endl;
-      else if (msg->mode.mode == MachineFleetData_MachineMode_Constants_MODE_PK_RELEASE)
-        std::cout << "ASSIGNED" << std::endl;
-      else if (msg->mode.mode == MachineFleetData_MachineMode_Constants_MODE_PK_CLAMP)
-        std::cout << "CHARGING" << std::endl;
-      else if (msg->mode.mode == MachineFleetData_MachineMode_Constants_MODE_ERROR)
-        std::cout << "ERROR" << std::endl;
-      //break;
-    }
-    else
-    {
+      std::cout << "machine_mode: " << msg->machine_mode << std::endl;
+      std::cout << "request_pickup: " << msg->request_pickup << std::endl;
+      std::cout << "dispenser_mode: " << msg->dispenser_mode.mode << std::endl;
+      std::string dispenser_request_id(msg->dispenser_request_id);
+      std::cout << "dispenser_request_id: " << dispenser_request_id << std::endl;
+      std::cout << "request_dropoff: " << msg->request_dropoff << std::endl;
+      std::cout << "ingestor_mode: " << msg->ingestor_mode.mode << std::endl;
+      std::string ingestor_request_id(msg->ingestor_request_id);
+      std::cout << "ingestor_request_id: " << ingestor_request_id << std::endl;
+      // break;
+    } else {
       /* Polling sleep. */
-      dds_sleepfor (DDS_MSECS (20));
+      dds_sleepfor(DDS_MSECS(20));
     }
   }
 
   /* Machine the data location. */
-  MachineFleetData_MachineState_free (samples[0], DDS_FREE_ALL);
+  MachineFleetData_MachineState_free(samples[0], DDS_FREE_ALL);
 
   /* Deleting the participant will delete all its children recursively as well. */
-  rc = dds_delete (participant);
+  rc = dds_delete(participant);
   if (rc != DDS_RETCODE_OK)
     DDS_FATAL("dds_delete: %s\n", dds_strretcode(-rc));
 
