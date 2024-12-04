@@ -13,10 +13,11 @@ class StationContext:
     _state: StationState
     _lock: threading.Lock
 
-    def __init__(self, name, headdevice) -> None:
+    def __init__(self, name: str, type: int, headdevice: str) -> None:
         self.name = name
         self.headdevice = headdevice
         self._state = StationState()
+        self._state.station_name = name
         self._lock = threading.Lock()
 
     def set_state(self, mode: int) -> None:
