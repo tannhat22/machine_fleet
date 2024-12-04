@@ -46,10 +46,14 @@ public:
         machine_state_subs;
 
     /// DDS publisher for machine requests to be sent to clients
-    dds::DDSPublishHandler<MachineFleetData_MachineRequest>::SharedPtr machine_request_pub;
+    std::unordered_map<std::string,
+                       dds::DDSPublishHandler<MachineFleetData_MachineRequest>::SharedPtr>
+        machine_request_pubs;
 
     /// DDS publisher for station requests to be sent to clients
-    dds::DDSPublishHandler<MachineFleetData_StationRequest>::SharedPtr station_request_pub;
+    std::unordered_map<std::string,
+                       dds::DDSPublishHandler<MachineFleetData_StationRequest>::SharedPtr>
+        station_request_pubs;
   };
 
   ServerImpl(const ServerConfig &config);

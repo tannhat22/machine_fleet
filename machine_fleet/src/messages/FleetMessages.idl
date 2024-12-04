@@ -54,7 +54,7 @@ module MachineFleetData
   {
     string machine_name;
     unsigned long request_type;
-    DeviceMode mode;
+    DeviceMode request_mode;
     string request_id;
   };
   struct MachineState

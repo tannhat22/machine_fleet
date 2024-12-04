@@ -18,51 +18,45 @@
 #ifndef MACHINE_FLEET_SERVER_ROS2__SRC__SERVERNODE_HPP
 #define MACHINE_FLEET_SERVER_ROS2__SRC__SERVERNODE_HPP
 
-#include <mutex>
 #include <memory>
+#include <mutex>
 #include <unordered_map>
 
-#include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node_options.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 #include <rcl_interfaces/msg/parameter_event.hpp>
 
-#include <machine_fleet_msgs/msg/delivery_request.hpp>
+#include <machine_fleet_msgs/msg/device_mode.hpp>
 #include <machine_fleet_msgs/msg/fleet_machine_state.hpp>
-#include <machine_fleet_msgs/msg/machine_state.hpp>
 #include <machine_fleet_msgs/msg/machine_request.hpp>
+#include <machine_fleet_msgs/msg/machine_state.hpp>
 #include <machine_fleet_msgs/msg/station_request.hpp>
+#include <machine_fleet_msgs/msg/station_state.hpp>
 
 #include <machine_fleet/Server.hpp>
-#include <machine_fleet/messages/DeliveryRequest.hpp>
 #include <machine_fleet/messages/MachineState.hpp>
 
 #include "ServerNodeConfig.hpp"
 
-namespace machine_fleet
-{
-namespace ros2
-{
+namespace machine_fleet {
+namespace ros2 {
 
-class ServerNode : public rclcpp::Node
-{
+class ServerNode : public rclcpp::Node {
 public:
-
   using SharedPtr = std::shared_ptr<ServerNode>;
   using ReadLock = std::unique_lock<std::mutex>;
   using WriteLock = std::unique_lock<std::mutex>;
 
-  static SharedPtr make(
-      const ServerNodeConfig& config,
-      const rclcpp::NodeOptions& options =
-          rclcpp::NodeOptions()
-              .allow_undeclared_parameters(true)
-              .automatically_declare_parameters_from_overrides(true));
+  static SharedPtr make(const ServerNodeConfig &config,
+                        const rclcpp::NodeOptions &options =
+                            rclcpp::NodeOptions()
+                                .allow_undeclared_parameters(true)
+                                .automatically_declare_parameters_from_overrides(true));
 
   ~ServerNode();
 
-  struct Fields
-  {
+  struct Fields {
     // Free fleet server
     Server::SharedPtr server;
   };
@@ -70,21 +64,17 @@ public:
   void print_config();
 
 private:
-
-  bool is_request_valid(
-      const std::string& fleet_name, const std::string& machine_name);
+  bool is_request_valid(const std::string &machine_name);
 
   // --------------------------------------------------------------------------
 
-  rclcpp::Subscription<machine_fleet_msgs::msg::MachineRequest>::SharedPtr
-      machine_request_sub;
+  rclcpp::Subscription<machine_fleet_msgs::msg::MachineRequest>::SharedPtr machine_request_sub;
 
   void handle_machine_request(machine_fleet_msgs::msg::MachineRequest::UniquePtr msg);
 
   // --------------------------------------------------------------------------
 
-  rclcpp::Subscription<machine_fleet_msgs::msg::StationRequest>::SharedPtr
-      station_request_sub;
+  rclcpp::Subscription<machine_fleet_msgs::msg::StationRequest>::SharedPtr station_request_sub;
 
   void handle_station_request(machine_fleet_msgs::msg::StationRequest::UniquePtr msg);
 
@@ -96,27 +86,17 @@ private:
 
   std::mutex machine_states_mutex;
 
-  std::unordered_map<std::string, machine_fleet_msgs::msg::MachineState>
-      machine_states;
-
-  std::unordered_map<std::string, machine_fleet_msgs::msg::DeliveryRequest>
-      delivery_requests;
+  std::unordered_map<std::string, machine_fleet_msgs::msg::MachineState> machine_states;
 
   void update_state_callback();
 
   // --------------------------------------------------------------------------
 
-  rclcpp::CallbackGroup::SharedPtr
-      fleet_state_pub_callback_group;
+  rclcpp::CallbackGroup::SharedPtr fleet_state_pub_callback_group;
 
   rclcpp::TimerBase::SharedPtr fleet_state_pub_timer;
 
-  rclcpp::Publisher<machine_fleet_msgs::msg::FleetMachineState>::SharedPtr
-      fleet_state_pub;
-
-  // Publish delivery request
-  rclcpp::Publisher<machine_fleet_msgs::msg::DeliveryRequest>::SharedPtr
-      delivery_request_pub;
+  rclcpp::Publisher<machine_fleet_msgs::msg::FleetMachineState>::SharedPtr fleet_state_pub;
 
   void publish_fleet_state();
 
@@ -130,11 +110,9 @@ private:
 
   Fields fields;
 
-  ServerNode(
-      const ServerNodeConfig& config, const rclcpp::NodeOptions& options);
+  ServerNode(const ServerNodeConfig &config, const rclcpp::NodeOptions &options);
 
   void start(Fields fields);
-
 };
 
 } // namespace ros2

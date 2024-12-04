@@ -1,26 +1,32 @@
+import os
+from glob import glob
 from setuptools import find_packages, setup
 
-package_name = 'machine_server_ros2'
+package_name = "machine_server_ros2"
+submodules1 = "machine_server_ros2/hostlinkprotocol"
+submodules2 = "machine_server_ros2/pymcprotocol"
+
 
 setup(
     name=package_name,
-    version='0.0.0',
-    packages=find_packages(exclude=['test']),
+    version="0.0.0",
+    packages=[package_name, submodules1, submodules2],
     data_files=[
-        ('share/ament_index/resource_index/packages',
-            ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
+        ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
+        ("share/" + package_name, ["package.xml"]),
+        ("share/" + package_name, ["config.yaml"]),
     ],
-    install_requires=['setuptools'],
+    install_requires=["setuptools"],
     zip_safe=True,
-    maintainer='tannhat',
-    maintainer_email='nguyentannhat2298@gmail.com',
-    description='TODO: Package description',
-    license='Apache-2.0',
-    tests_require=['pytest'],
+    maintainer="tannhat",
+    maintainer_email="nguyentannhat2298@gmail.com",
+    description="TODO: Package description",
+    license="Apache-2.0",
+    tests_require=["pytest"],
     entry_points={
-        'console_scripts': [
-            'machine_server_ros2 = machine_server_ros2.machine_server:main',
+        "console_scripts": [
+            "machine_server = machine_server_ros2.machine_server:main",
+            "machine_state_update = machine_server_ros2.machine_state_update:main",
         ],
     },
 )

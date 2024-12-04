@@ -8,121 +8,137 @@
 *****************************************************************/
 #include "FleetMessages.h"
 
+static const uint32_t MachineFleetData_DeviceMode_ops[] = {
+    DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof(MachineFleetData_DeviceMode, mode), DDS_OP_RTS};
 
-static const uint32_t MachineFleetData_DeviceMode_ops [] =
-{
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MachineFleetData_DeviceMode, mode),
-  DDS_OP_RTS
-};
+const dds_topic_descriptor_t MachineFleetData_DeviceMode_desc = {
+    sizeof(MachineFleetData_DeviceMode),
+    4u,
+    0u,
+    0u,
+    "MachineFleetData::DeviceMode",
+    NULL,
+    2,
+    MachineFleetData_DeviceMode_ops,
+    "<MetaData version=\"1.0.0\"><Module name=\"MachineFleetData\"><Struct "
+    "name=\"DeviceMode\"><Member name=\"mode\"><ULong/></Member></Struct></Module></MetaData>"};
 
-const dds_topic_descriptor_t MachineFleetData_DeviceMode_desc =
-{
-  sizeof (MachineFleetData_DeviceMode),
-  4u,
-  0u,
-  0u,
-  "MachineFleetData::DeviceMode",
-  NULL,
-  2,
-  MachineFleetData_DeviceMode_ops,
-  "<MetaData version=\"1.0.0\"><Module name=\"MachineFleetData\"><Struct name=\"DeviceMode\"><Member name=\"mode\"><ULong/></Member></Struct></Module></MetaData>"
-};
+static const uint32_t MachineFleetData_StationRequest_ops[] = {
+    DDS_OP_ADR | DDS_OP_TYPE_STR,
+    offsetof(MachineFleetData_StationRequest, machine_name),
+    DDS_OP_ADR | DDS_OP_TYPE_STR,
+    offsetof(MachineFleetData_StationRequest, station_name),
+    DDS_OP_ADR | DDS_OP_TYPE_4BY,
+    offsetof(MachineFleetData_StationRequest, station_type),
+    DDS_OP_ADR | DDS_OP_TYPE_4BY,
+    offsetof(MachineFleetData_StationRequest, mode),
+    DDS_OP_RTS};
 
+const dds_topic_descriptor_t MachineFleetData_StationRequest_desc = {
+    sizeof(MachineFleetData_StationRequest),
+    sizeof(char *),
+    DDS_TOPIC_NO_OPTIMIZE,
+    0u,
+    "MachineFleetData::StationRequest",
+    NULL,
+    5,
+    MachineFleetData_StationRequest_ops,
+    "<MetaData version=\"1.0.0\"><Module name=\"MachineFleetData\"><Struct "
+    "name=\"StationRequest\"><Member name=\"machine_name\"><String/></Member><Member "
+    "name=\"station_name\"><String/></Member><Member "
+    "name=\"station_type\"><ULong/></Member><Member "
+    "name=\"mode\"><ULong/></Member></Struct></Module></MetaData>"};
 
-static const uint32_t MachineFleetData_StationRequest_ops [] =
-{
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MachineFleetData_StationRequest, machine_name),
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MachineFleetData_StationRequest, station_name),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MachineFleetData_StationRequest, station_type),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MachineFleetData_StationRequest, mode),
-  DDS_OP_RTS
-};
+static const uint32_t MachineFleetData_StationState_ops[] = {
+    DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof(MachineFleetData_StationState, station_name),
+    DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof(MachineFleetData_StationState, mode), DDS_OP_RTS};
 
-const dds_topic_descriptor_t MachineFleetData_StationRequest_desc =
-{
-  sizeof (MachineFleetData_StationRequest),
-  sizeof (char *),
-  DDS_TOPIC_NO_OPTIMIZE,
-  0u,
-  "MachineFleetData::StationRequest",
-  NULL,
-  5,
-  MachineFleetData_StationRequest_ops,
-  "<MetaData version=\"1.0.0\"><Module name=\"MachineFleetData\"><Struct name=\"StationRequest\"><Member name=\"machine_name\"><String/></Member><Member name=\"station_name\"><String/></Member><Member name=\"station_type\"><ULong/></Member><Member name=\"mode\"><ULong/></Member></Struct></Module></MetaData>"
-};
+const dds_topic_descriptor_t MachineFleetData_StationState_desc = {
+    sizeof(MachineFleetData_StationState),
+    sizeof(char *),
+    DDS_TOPIC_NO_OPTIMIZE,
+    0u,
+    "MachineFleetData::StationState",
+    NULL,
+    3,
+    MachineFleetData_StationState_ops,
+    "<MetaData version=\"1.0.0\"><Module name=\"MachineFleetData\"><Struct "
+    "name=\"StationState\"><Member name=\"station_name\"><String/></Member><Member "
+    "name=\"mode\"><ULong/></Member></Struct></Module></MetaData>"};
 
+static const uint32_t MachineFleetData_MachineRequest_ops[] = {
+    DDS_OP_ADR | DDS_OP_TYPE_STR,
+    offsetof(MachineFleetData_MachineRequest, machine_name),
+    DDS_OP_ADR | DDS_OP_TYPE_4BY,
+    offsetof(MachineFleetData_MachineRequest, request_type),
+    DDS_OP_ADR | DDS_OP_TYPE_4BY,
+    offsetof(MachineFleetData_MachineRequest, request_mode.mode),
+    DDS_OP_ADR | DDS_OP_TYPE_STR,
+    offsetof(MachineFleetData_MachineRequest, request_id),
+    DDS_OP_RTS};
 
-static const uint32_t MachineFleetData_StationState_ops [] =
-{
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MachineFleetData_StationState, station_name),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MachineFleetData_StationState, mode),
-  DDS_OP_RTS
-};
+const dds_topic_descriptor_t MachineFleetData_MachineRequest_desc = {
+    sizeof(MachineFleetData_MachineRequest),
+    sizeof(char *),
+    DDS_TOPIC_NO_OPTIMIZE,
+    0u,
+    "MachineFleetData::MachineRequest",
+    NULL,
+    5,
+    MachineFleetData_MachineRequest_ops,
+    "<MetaData version=\"1.0.0\"><Module name=\"MachineFleetData\"><Struct "
+    "name=\"DeviceMode\"><Member name=\"mode\"><ULong/></Member></Struct><Struct "
+    "name=\"MachineRequest\"><Member name=\"machine_name\"><String/></Member><Member "
+    "name=\"request_type\"><ULong/></Member><Member name=\"request_mode\"><Type "
+    "name=\"DeviceMode\"/></Member><Member "
+    "name=\"request_id\"><String/></Member></Struct></Module></MetaData>"};
 
-const dds_topic_descriptor_t MachineFleetData_StationState_desc =
-{
-  sizeof (MachineFleetData_StationState),
-  sizeof (char *),
-  DDS_TOPIC_NO_OPTIMIZE,
-  0u,
-  "MachineFleetData::StationState",
-  NULL,
-  3,
-  MachineFleetData_StationState_ops,
-  "<MetaData version=\"1.0.0\"><Module name=\"MachineFleetData\"><Struct name=\"StationState\"><Member name=\"station_name\"><String/></Member><Member name=\"mode\"><ULong/></Member></Struct></Module></MetaData>"
-};
+static const uint32_t MachineFleetData_MachineState_ops[] = {
+    DDS_OP_ADR | DDS_OP_TYPE_STR,
+    offsetof(MachineFleetData_MachineState, machine_name),
+    DDS_OP_ADR | DDS_OP_TYPE_4BY,
+    offsetof(MachineFleetData_MachineState, machine_mode),
+    DDS_OP_ADR | DDS_OP_TYPE_BLN,
+    offsetof(MachineFleetData_MachineState, request_pickup),
+    DDS_OP_ADR | DDS_OP_TYPE_4BY,
+    offsetof(MachineFleetData_MachineState, dispenser_mode.mode),
+    DDS_OP_ADR | DDS_OP_TYPE_STR,
+    offsetof(MachineFleetData_MachineState, dispenser_request_id),
+    DDS_OP_ADR | DDS_OP_TYPE_BLN,
+    offsetof(MachineFleetData_MachineState, request_dropoff),
+    DDS_OP_ADR | DDS_OP_TYPE_4BY,
+    offsetof(MachineFleetData_MachineState, ingestor_mode.mode),
+    DDS_OP_ADR | DDS_OP_TYPE_STR,
+    offsetof(MachineFleetData_MachineState, ingestor_request_id),
+    DDS_OP_ADR | DDS_OP_TYPE_SEQ | DDS_OP_SUBTYPE_STU,
+    offsetof(MachineFleetData_MachineState, station_states),
+    sizeof(MachineFleetData_StationState),
+    (9u << 16u) + 4u,
+    DDS_OP_ADR | DDS_OP_TYPE_STR,
+    offsetof(MachineFleetData_StationState, station_name),
+    DDS_OP_ADR | DDS_OP_TYPE_4BY,
+    offsetof(MachineFleetData_StationState, mode),
+    DDS_OP_RTS,
+    DDS_OP_RTS};
 
-
-static const uint32_t MachineFleetData_MachineRequest_ops [] =
-{
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MachineFleetData_MachineRequest, machine_name),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MachineFleetData_MachineRequest, request_type),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MachineFleetData_MachineRequest, mode.mode),
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MachineFleetData_MachineRequest, request_id),
-  DDS_OP_RTS
-};
-
-const dds_topic_descriptor_t MachineFleetData_MachineRequest_desc =
-{
-  sizeof (MachineFleetData_MachineRequest),
-  sizeof (char *),
-  DDS_TOPIC_NO_OPTIMIZE,
-  0u,
-  "MachineFleetData::MachineRequest",
-  NULL,
-  5,
-  MachineFleetData_MachineRequest_ops,
-  "<MetaData version=\"1.0.0\"><Module name=\"MachineFleetData\"><Struct name=\"DeviceMode\"><Member name=\"mode\"><ULong/></Member></Struct><Struct name=\"MachineRequest\"><Member name=\"machine_name\"><String/></Member><Member name=\"request_type\"><ULong/></Member><Member name=\"mode\"><Type name=\"DeviceMode\"/></Member><Member name=\"request_id\"><String/></Member></Struct></Module></MetaData>"
-};
-
-
-static const uint32_t MachineFleetData_MachineState_ops [] =
-{
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MachineFleetData_MachineState, machine_name),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MachineFleetData_MachineState, machine_mode),
-  DDS_OP_ADR | DDS_OP_TYPE_BLN, offsetof (MachineFleetData_MachineState, request_pickup),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MachineFleetData_MachineState, dispenser_mode.mode),
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MachineFleetData_MachineState, dispenser_request_id),
-  DDS_OP_ADR | DDS_OP_TYPE_BLN, offsetof (MachineFleetData_MachineState, request_dropoff),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MachineFleetData_MachineState, ingestor_mode.mode),
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MachineFleetData_MachineState, ingestor_request_id),
-  DDS_OP_ADR | DDS_OP_TYPE_SEQ | DDS_OP_SUBTYPE_STU, offsetof (MachineFleetData_MachineState, station_states),
-  sizeof (MachineFleetData_StationState), (9u << 16u) + 4u,
-  DDS_OP_ADR | DDS_OP_TYPE_STR, offsetof (MachineFleetData_StationState, station_name),
-  DDS_OP_ADR | DDS_OP_TYPE_4BY, offsetof (MachineFleetData_StationState, mode),
-  DDS_OP_RTS,
-  DDS_OP_RTS
-};
-
-const dds_topic_descriptor_t MachineFleetData_MachineState_desc =
-{
-  sizeof (MachineFleetData_MachineState),
-  sizeof (char *),
-  DDS_TOPIC_NO_OPTIMIZE,
-  0u,
-  "MachineFleetData::MachineState",
-  NULL,
-  14,
-  MachineFleetData_MachineState_ops,
-  "<MetaData version=\"1.0.0\"><Module name=\"MachineFleetData\"><Struct name=\"DeviceMode\"><Member name=\"mode\"><ULong/></Member></Struct><Struct name=\"StationState\"><Member name=\"station_name\"><String/></Member><Member name=\"mode\"><ULong/></Member></Struct><Struct name=\"MachineState\"><Member name=\"machine_name\"><String/></Member><Member name=\"machine_mode\"><ULong/></Member><Member name=\"request_pickup\"><Boolean/></Member><Member name=\"dispenser_mode\"><Type name=\"DeviceMode\"/></Member><Member name=\"dispenser_request_id\"><String/></Member><Member name=\"request_dropoff\"><Boolean/></Member><Member name=\"ingestor_mode\"><Type name=\"DeviceMode\"/></Member><Member name=\"ingestor_request_id\"><String/></Member><Member name=\"station_states\"><Sequence><Type name=\"StationState\"/></Sequence></Member></Struct></Module></MetaData>"
-};
+const dds_topic_descriptor_t MachineFleetData_MachineState_desc = {
+    sizeof(MachineFleetData_MachineState),
+    sizeof(char *),
+    DDS_TOPIC_NO_OPTIMIZE,
+    0u,
+    "MachineFleetData::MachineState",
+    NULL,
+    14,
+    MachineFleetData_MachineState_ops,
+    "<MetaData version=\"1.0.0\"><Module name=\"MachineFleetData\"><Struct "
+    "name=\"DeviceMode\"><Member name=\"mode\"><ULong/></Member></Struct><Struct "
+    "name=\"StationState\"><Member name=\"station_name\"><String/></Member><Member "
+    "name=\"mode\"><ULong/></Member></Struct><Struct name=\"MachineState\"><Member "
+    "name=\"machine_name\"><String/></Member><Member "
+    "name=\"machine_mode\"><ULong/></Member><Member "
+    "name=\"request_pickup\"><Boolean/></Member><Member name=\"dispenser_mode\"><Type "
+    "name=\"DeviceMode\"/></Member><Member name=\"dispenser_request_id\"><String/></Member><Member "
+    "name=\"request_dropoff\"><Boolean/></Member><Member name=\"ingestor_mode\"><Type "
+    "name=\"DeviceMode\"/></Member><Member name=\"ingestor_request_id\"><String/></Member><Member "
+    "name=\"station_states\"><Sequence><Type "
+    "name=\"StationState\"/></Sequence></Member></Struct></Module></MetaData>"};

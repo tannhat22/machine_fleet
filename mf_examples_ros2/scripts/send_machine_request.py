@@ -20,65 +20,73 @@ import argparse
 import rclpy
 from rclpy.node import Node
 
-from machine_fleet_msgs.msg import MachineMode
-from machine_fleet_msgs.msg import MachineRequest
+from machine_fleet_msgs.msg import DeviceMode, MachineRequest
 
 
-def main(argv = sys.argv):
-    '''
+def main(argv=sys.argv):
+    """
     Example charge request:
-    - fleet_name: magni
     - machine_name: magni123
     - request_id: 6tyghb4edujrefyd
-    - mode.mode: RELEASE
-    '''
+    - request_type: dispenser
+    - mode: 1
+    """
 
-    default_fleet_name = 'amr_vdm'
-    default_machine_name = 'nqvlm104'
-    default_request_id = '576y13ewgyffeijuais'
-    default_mode = 'release'
-    default_topic_name = '/machine_request'
+    default_machine_name = "nqvlm104"
+    default_request_id = "576y13ewgyffeijuais"
+    default_request_type = "dispenser"
+    default_mode = "1"
+    default_topic_name = "/machine_request"
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--fleet-name', default=default_fleet_name)
-    parser.add_argument('-c', '--machine-name', default=default_machine_name)
-    parser.add_argument('-m', '--mode', default=default_mode)
-    parser.add_argument('-i', '--request-id', default=default_request_id)
-    parser.add_argument('-t', '--topic-name', default=default_topic_name)
+    parser.add_argument("-c", "--machine-name", default=default_machine_name)
+    parser.add_argument("-r", "--request-type", default=default_request_type)
+    parser.add_argument("-m", "--mode", default=default_mode)
+    parser.add_argument("-i", "--request-id", default=default_request_id)
+    parser.add_argument("-t", "--topic-name", default=default_topic_name)
     args = parser.parse_args(argv[1:])
 
-    print('fleet_name: {}'.format(args.fleet_name))
-    print('machine_name: {}'.format(args.machine_name))
-    print('mode: {}'.format(args.mode))
-    print('request_id: {}'.format(args.request_id))
-    print('topic_name: {}'.format(args.topic_name))
+    print("machine_name: {}".format(args.machine_name))
+    print("request_type: {}".format(args.request_type))
+    print("mode: {}".format(args.mode))
+    print("request_id: {}".format(args.request_id))
+    print("topic_name: {}".format(args.topic_name))
 
     rclpy.init()
-    node = rclpy.create_node('send_machine_request_node')
+    node = rclpy.create_node("send_machine_request_node")
     pub = node.create_publisher(MachineRequest, args.topic_name, 10)
 
     msg = MachineRequest()
-    msg.fleet_name = args.fleet_name
+    msg.time = node.get_clock().now().to_msg()
     msg.machine_name = args.machine_name
+    msg.request_type = args.request_type
     msg.request_id = args.request_id
-    
-    if args.mode == 'mode':
-        print('Please insert desired mode: release or clamp')
+
+    if args.mode == "mode":
+        print("Please insert desired mode: [0, 1, 2, 3, 4 ,5]")
         return
-    elif args.mode == 'release':
-        msg.mode.mode = MachineMode.MODE_RELEASE 
-    elif args.mode == 'clamp':
-        msg.mode.mode = MachineMode.MODE_CLAMP
+    elif args.mode == "0":
+        msg.request_mode.mode = DeviceMode.MODE_IDLE
+    elif args.mode == "1":
+        msg.request_mode.mode = DeviceMode.MODE_ACCEPT_DOCKIN
+    elif args.mode == "2":
+        msg.request_mode.mode = DeviceMode.MODE_ROBOT_DOCKED_IN
+    elif args.mode == "3":
+        msg.request_mode.mode = DeviceMode.MODE_ACCEPT_DOCKOUT
+    elif args.mode == "4":
+        msg.request_mode.mode = DeviceMode.MODE_CANCEL
+    elif args.mode == "5":
+        msg.request_mode.mode = DeviceMode.MODE_ROBOT_ERROR
     else:
-        print('unrecognized mode requested, only use release or clamp please')
+        print("unrecognized mode requested, only use [0, 1, 2, 3, 4 ,5] please")
         return
-  
+
     rclpy.spin_once(node, timeout_sec=1.0)
     pub.publish(msg)
     rclpy.spin_once(node, timeout_sec=0.5)
-    print('all done!')
+    print("all done!")
     rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(sys.argv)

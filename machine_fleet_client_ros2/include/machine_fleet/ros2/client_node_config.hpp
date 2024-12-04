@@ -24,25 +24,19 @@
 
 #include <machine_fleet/ClientConfig.hpp>
 
-namespace machine_fleet
-{
-namespace ros2
-{
+namespace machine_fleet {
+namespace ros2 {
 
-struct ClientNodeConfig
-{
+struct ClientNodeConfig {
 
   std::string machine_name = "machine_name";
-  std::string fleet_name = "fleet_name";
 
   std::string machine_state_topic = "/machine_state";
-  std::string delivery_request_topic = "/delivery_request";
   std::string station_request_topic = "/station_request";
-  std::string machine_trigger_server_name = "machine_server";
+  std::string machine_service_name = "machine_server";
 
   int dds_domain = 52;
   std::string dds_state_topic = "machine_state";
-  std::string dds_delivery_request_topic = "delivery_request";
   std::string dds_machine_request_topic = "machine_request";
   std::string dds_station_request_topic = "station_request";
 

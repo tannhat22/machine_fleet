@@ -1,0 +1,23 @@
+machine_info:
+  name: "nqvlm104"
+  mode_operation: "combine"
+  ip: "192.168.1.250"
+  port: 8000
+  port_machine_state: 8001
+  time_out: 1000.0
+  frequency: 2.0
+  register:
+    machine_data: 'DM300'
+    dispenser_control: 'DM310'
+    ingestor_control: 'DM311'
+    request_type: 'D312'
+  bit:
+    dispenser_trigger: 'MR300'
+    ingestor_trigger: 'MR301'
+    request_delivery: 'MR302'
+    station_state: 'MR303'
+
+  stations:
+    station001: 'MR001'
+    station002: 'MR002'
+    station003: 'MR003'

@@ -14,7 +14,6 @@ if (ament_cmake_FOUND)
 
   install(
     PROGRAMS 
-    scripts/send_delivery_request.py
     scripts/send_machine_request.py
     scripts/send_station_request.py
     DESTINATION lib/${PROJECT_NAME}

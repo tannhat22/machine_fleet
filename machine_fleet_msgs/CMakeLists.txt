@@ -23,7 +23,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/MachineState.msg"
   "msg/StationRequest.msg"
   "msg/StationState.msg"
-  "srv/MachineCart.srv"
+  "srv/Machine.srv"
   DEPENDENCIES std_msgs # Add packages that above messages depend on
 )
 

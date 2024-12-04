@@ -18,41 +18,31 @@
 #ifndef MACHINE_FLEET_SERVER_ROS2__SRC__UTILITIES_HPP
 #define MACHINE_FLEET_SERVER_ROS2__SRC__UTILITIES_HPP
 
-#include <machine_fleet_msgs/msg/delivery_request.hpp>
-#include <machine_fleet_msgs/msg/machine_state.hpp>
 #include <machine_fleet_msgs/msg/machine_request.hpp>
+#include <machine_fleet_msgs/msg/machine_state.hpp>
 #include <machine_fleet_msgs/msg/station_request.hpp>
+#include <machine_fleet_msgs/msg/station_state.hpp>
 
-#include <machine_fleet/messages/DeliveryRequest.hpp>
-#include <machine_fleet/messages/MachineState.hpp>
 #include <machine_fleet/messages/MachineRequest.hpp>
+#include <machine_fleet/messages/MachineState.hpp>
 #include <machine_fleet/messages/StationRequest.hpp>
+#include <machine_fleet/messages/StationState.hpp>
 
-namespace machine_fleet
-{
-namespace ros2
-{
+namespace machine_fleet {
+namespace ros2 {
 
-void to_mf_message(
-    const machine_fleet_msgs::msg::MachineRequest& in_msg, 
-    messages::MachineRequest& out_msg);
+void to_mf_message(const machine_fleet_msgs::msg::MachineRequest &in_msg,
+                   messages::MachineRequest &out_msg);
 
-void to_mf_message(
-    const machine_fleet_msgs::msg::StationRequest& in_msg, 
-    messages::StationRequest& out_msg);
+void to_mf_message(const machine_fleet_msgs::msg::StationRequest &in_msg,
+                   messages::StationRequest &out_msg);
 
 // ----------------------------------------------------------------------------
 
-void to_ros_message(
-    const messages::MachineState& in_msg,
-    machine_fleet_msgs::msg::MachineState& out_msg);
-
-void to_ros_message(
-    const messages::DeliveryRequest& in_msg,
-    machine_fleet_msgs::msg::DeliveryRequest& out_msg);
+void to_ros_message(const messages::MachineState &in_msg,
+                    machine_fleet_msgs::msg::MachineState &out_msg);
 
 } // namespace ros2
 } // namespace machine_fleet
-
 
 #endif // MACHINE_FLEET_SERVER_ROS2__SRC__UTILITIES_HPP

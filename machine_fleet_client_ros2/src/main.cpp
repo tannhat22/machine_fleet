@@ -18,15 +18,14 @@
 #include <iostream>
 #include <memory>
 
-#include <rclcpp/rclcpp.hpp>
 #include "machine_fleet/ros2/client_node.hpp"
+#include <rclcpp/rclcpp.hpp>
 
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<machine_fleet::ros2::ClientNode>();
   rclcpp::spin(node);
-  
+
   // Cleanup and exit
   rclcpp::shutdown();
   return 0;

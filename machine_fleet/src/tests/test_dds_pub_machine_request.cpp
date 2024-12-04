@@ -104,17 +104,17 @@ int main(int argc, char **argv) {
   }
 
   if (mode == "0")
-    msg->mode.mode = MachineFleetData_DeviceMode_Constants_MODE_IDLE;
+    msg->request_mode.mode = MachineFleetData_DeviceMode_Constants_MODE_IDLE;
   else if (mode == "1")
-    msg->mode.mode = MachineFleetData_DeviceMode_Constants_MODE_ACCEPT_DOCKIN;
+    msg->request_mode.mode = MachineFleetData_DeviceMode_Constants_MODE_ACCEPT_DOCKIN;
   else if (mode == "2")
-    msg->mode.mode = MachineFleetData_DeviceMode_Constants_MODE_ROBOT_DOCKED_IN;
+    msg->request_mode.mode = MachineFleetData_DeviceMode_Constants_MODE_ROBOT_DOCKED_IN;
   else if (mode == "3")
-    msg->mode.mode = MachineFleetData_DeviceMode_Constants_MODE_ACCEPT_DOCKOUT;
+    msg->request_mode.mode = MachineFleetData_DeviceMode_Constants_MODE_ACCEPT_DOCKOUT;
   else if (mode == "4")
-    msg->mode.mode = MachineFleetData_DeviceMode_Constants_MODE_CANCEL;
+    msg->request_mode.mode = MachineFleetData_DeviceMode_Constants_MODE_CANCEL;
   else if (mode == "5")
-    msg->mode.mode = MachineFleetData_DeviceMode_Constants_MODE_ROBOT_ERROR;
+    msg->request_mode.mode = MachineFleetData_DeviceMode_Constants_MODE_ROBOT_ERROR;
 
   printf("=== [Publisher]  Writing : ");
   printf("Message: machine_request %s\n", request_type.c_str());

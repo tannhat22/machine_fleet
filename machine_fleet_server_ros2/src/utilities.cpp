@@ -17,52 +17,48 @@
 
 #include "utilities.hpp"
 
-namespace machine_fleet
-{
-namespace ros2
-{
+namespace machine_fleet {
+namespace ros2 {
 
-void to_mf_message(
-    const machine_fleet_msgs::msg::MachineRequest& _in_msg, 
-    messages::MachineRequest& _out_msg)
-{
+void to_mf_message(const machine_fleet_msgs::msg::MachineRequest &_in_msg,
+                   messages::MachineRequest &_out_msg) {
   _out_msg.machine_name = _in_msg.machine_name;
-  _out_msg.fleet_name = _in_msg.fleet_name;
+  _out_msg.request_type = _in_msg.request_type;
+  _out_msg.request_mode.mode = _in_msg.request_mode.mode;
   _out_msg.request_id = _in_msg.request_id;
-  _out_msg.mode.mode = _in_msg.mode.mode;
 }
 
-void to_mf_message(
-    const machine_fleet_msgs::msg::StationRequest& _in_msg, 
-    messages::StationRequest& _out_msg)
-{
+void to_mf_message(const machine_fleet_msgs::msg::StationRequest &_in_msg,
+                   messages::StationRequest &_out_msg) {
   _out_msg.machine_name = _in_msg.machine_name;
-  _out_msg.fleet_name = _in_msg.fleet_name;
-  _out_msg.request_id = _in_msg.request_id;
   _out_msg.station_name = _in_msg.station_name;
-  _out_msg.mode.mode = _in_msg.mode.mode;
+  _out_msg.station_type = _in_msg.station_type;
+  _out_msg.mode = _in_msg.mode;
 }
 
-void to_ros_message(
-    const messages::MachineState& _in_msg,
-    machine_fleet_msgs::msg::MachineState& _out_msg)
-{
-  _out_msg.machine_name = _in_msg.machine_name;
-  _out_msg.fleet_name = _in_msg.fleet_name;
-  _out_msg.error_message = _in_msg.error_message;
-  _out_msg.request_id = _in_msg.request_id;
-  _out_msg.mode.mode = _in_msg.mode.mode;
-}
-
-void to_ros_message(
-    const messages::DeliveryRequest& _in_msg,
-    machine_fleet_msgs::msg::DeliveryRequest& _out_msg)
-{
-  _out_msg.machine_name = _in_msg.machine_name;
-  _out_msg.fleet_name = _in_msg.fleet_name;
+void to_ros_message(const messages::StationState &_in_msg,
+                    machine_fleet_msgs::msg::StationState &_out_msg) {
   _out_msg.station_name = _in_msg.station_name;
-  _out_msg.request_id = _in_msg.request_id;
-  _out_msg.mode.mode = _in_msg.mode.mode;
+  _out_msg.mode = _in_msg.mode;
+}
+
+void to_ros_message(const messages::MachineState &_in_msg,
+                    machine_fleet_msgs::msg::MachineState &_out_msg) {
+  _out_msg.machine_name = _in_msg.machine_name;
+  _out_msg.machine_mode = _in_msg.machine_mode;
+  _out_msg.request_pickup = _in_msg.request_pickup;
+  _out_msg.dispenser_mode.mode = _in_msg.dispenser_mode.mode;
+  _out_msg.dispenser_request_id = _in_msg.dispenser_request_id;
+  _out_msg.request_dropoff = _in_msg.request_dropoff;
+  _out_msg.ingestor_mode.mode = _in_msg.ingestor_mode.mode;
+  _out_msg.ingestor_request_id = _in_msg.ingestor_request_id;
+
+  _out_msg.station_states = {};
+  for (size_t i = 0; i < _in_msg.station_states.size(); ++i) {
+    machine_fleet_msgs::msg::StationState tmp_state;
+    to_ros_message(_in_msg.station_states[i], tmp_state);
+    _out_msg.station_states.push_back(tmp_state);
+  }
 }
 
 } // namespace ros2

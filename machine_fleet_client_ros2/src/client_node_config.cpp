@@ -19,39 +19,33 @@
 
 #include "machine_fleet/ros2/client_node_config.hpp"
 
-namespace machine_fleet
-{
-namespace ros2
-{
+namespace machine_fleet {
+namespace ros2 {
 
-void ClientNodeConfig::print_config() const
-{
+void ClientNodeConfig::print_config() const {
   printf("ROS 2 CLIENT CONFIGURATION\n");
-  printf("  fleet name: %s\n", fleet_name.c_str());
+  // printf("  fleet name: %s\n", fleet_name.c_str());
   printf("  machine name: %s\n", machine_name.c_str());
   printf("  wait timeout: %.1f\n", wait_timeout);
   printf("  update request frequency: %.1f\n", update_frequency);
   printf("  publish state frequency: %.1f\n", publish_frequency);
   printf("  TOPICS\n");
   printf("    machine state: %s\n", machine_state_topic.c_str());
-  printf("    delivery request: %s\n", delivery_request_topic.c_str());
   printf("    station request: %s\n", station_request_topic.c_str());
-  printf("    machine trigger server: %s\n", machine_trigger_server_name.c_str());
+  printf("    machine service server: %s\n", machine_service_name.c_str());
   printf("CLIENT-SERVER DDS CONFIGURATION\n");
   printf("  dds domain: %d\n", dds_domain);
   printf("  TOPICS\n");
   printf("    machine state: %s\n", dds_state_topic.c_str());
-  printf("    delivery request: %s\n", dds_delivery_request_topic.c_str());
   printf("    machine request: %s\n", dds_machine_request_topic.c_str());
   printf("    station request: %s\n", dds_station_request_topic.c_str());
 }
-  
-ClientConfig ClientNodeConfig::get_client_config() const
-{
+
+ClientConfig ClientNodeConfig::get_client_config() const {
   ClientConfig client_config;
   client_config.dds_domain = dds_domain;
+  client_config.machine_name = machine_name;
   client_config.dds_state_topic = dds_state_topic;
-  client_config.dds_delivery_request_topic = dds_delivery_request_topic;
   client_config.dds_machine_request_topic = dds_machine_request_topic;
   client_config.dds_station_request_topic = dds_station_request_topic;
   return client_config;

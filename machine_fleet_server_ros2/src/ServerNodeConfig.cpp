@@ -21,13 +21,10 @@
 
 #include "ServerNodeConfig.hpp"
 
-namespace machine_fleet
-{
-namespace ros2
-{
+namespace machine_fleet {
+namespace ros2 {
 
-void ServerNodeConfig::print_config() const
-{
+void ServerNodeConfig::print_config() const {
   setbuf(stdout, NULL);
   printf("ROS 2 MACHINE SERVER CONFIGURATION\n");
   printf("  fleet name: %s\n", fleet_name.c_str());
@@ -35,31 +32,34 @@ void ServerNodeConfig::print_config() const
   printf("  publish state frequency: %.1f\n", publish_state_frequency);
   printf("  TOPICS\n");
   printf("    fleet state: %s\n", fleet_state_topic.c_str());
-  printf("    delivery request: %s\n", delivery_request_topic.c_str());
   printf("    machine request: %s\n", machine_request_topic.c_str());
   printf("    station request: %s\n", station_request_topic.c_str());
   printf("MACHINE SERVER-CLIENT DDS CONFIGURATION\n");
   printf("  dds domain: %d\n", dds_domain);
   printf("  TOPICS\n");
+  printf("    machine_namespaces: [");
+  for (size_t i = 0; i < machine_names.size(); ++i) {
+    if (i == machine_names.size() - 1)
+      printf("%s]\n", machine_names[i].c_str());
+    else
+      printf("%s, ", machine_names[i].c_str());
+  }
   printf("    machine state: %s\n", dds_machine_state_topic.c_str());
-  printf("    delivery request: %s\n", dds_delivery_request_topic.c_str());
   printf("    machine request: %s\n", dds_machine_request_topic.c_str());
   printf("    station request: %s\n", dds_station_request_topic.c_str());
 }
 
-ServerConfig ServerNodeConfig::get_server_config() const
-{
+ServerConfig ServerNodeConfig::get_server_config() const {
   ServerConfig server_config;
   server_config.dds_domain = dds_domain;
+  server_config.machine_names = machine_names;
   server_config.dds_machine_state_topic = dds_machine_state_topic;
-  server_config.dds_delivery_request_topic = dds_delivery_request_topic;
   server_config.dds_machine_request_topic = dds_machine_request_topic;
   server_config.dds_station_request_topic = dds_station_request_topic;
   return server_config;
 }
 
-ServerNodeConfig ServerNodeConfig::make()
-{
+ServerNodeConfig ServerNodeConfig::make() {
   ServerNodeConfig config;
   return config;
 }

@@ -21,9 +21,7 @@
 
 #include "ServerNode.hpp"
 
-
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   std::cout << "Greetings from machine_fleet_server_ros2" << std::endl;
 
@@ -35,8 +33,7 @@ int main(int argc, char** argv)
   if (!server_node)
     return 1;
 
-  rclcpp::executors::MultiThreadedExecutor executor {
-      rclcpp::ExecutorOptions(), 2};
+  rclcpp::executors::MultiThreadedExecutor executor{rclcpp::ExecutorOptions(), 2};
   executor.add_node(server_node);
   executor.spin();
 

@@ -20,24 +20,20 @@
 
 #include <string>
 
-namespace machine_fleet
-{
-namespace ros2
-{
+namespace machine_fleet {
+namespace ros2 {
 
-struct ServerNodeConfig
-{
-  
+struct ServerNodeConfig {
+
   std::string fleet_name = "fleet_name";
+  std::vector<std::string> machine_names = {"machine001", "machine001"};
 
   std::string fleet_state_topic = "fleet_machine_state";
-  std::string delivery_request_topic = "delivery_request";
   std::string machine_request_topic = "machine_request";
   std::string station_request_topic = "station_request";
 
   int dds_domain = 52;
-  std::string dds_machine_state_topic = "fleet_machine_state";
-  std::string dds_delivery_request_topic = "delivery_request";
+  std::string dds_machine_state_topic = "machine_state";
   std::string dds_machine_request_topic = "machine_request";
   std::string dds_station_request_topic = "station_request";
 
@@ -49,7 +45,6 @@ struct ServerNodeConfig
   ServerConfig get_server_config() const;
 
   static ServerNodeConfig make();
-
 };
 
 } // namespace ros2

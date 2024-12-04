@@ -1,354 +1,146 @@
 import time
-import socket
-from uuid import uuid4
+import sys
+import argparse
+import yaml
 import rclpy
 from rclpy.node import Node
-from rclpy.executors import MultiThreadedExecutor
-from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
 
-from std_msgs.msg import Empty
-from machine_fleet_msgs.srv import MachineCart
-from machine_fleet_msgs.msg import DeliveryMode, DeliveryRequest, MachineState, MachineMode, StationMode, StationRequest 
+from machine_fleet_msgs.srv import Machine
+from machine_fleet_msgs.msg import MachineRequest
+
+from .pymcprotocol import Type3E
+
 
 class MachineService(Node):
-    def __init__(self):
+    def __init__(self, config_yaml):
         super().__init__("machine_service")
+        self.config_yaml = config_yaml
+
         # Params:
         # Cấu hình các thông số quan trọng:
-        self.declare_parameter('PLC_IP_address','192.168.1.1')
-        self.declare_parameter('PLC_Port_address',8501)
-        self.declare_parameter('timeout', 10.0)
-        self.declare_parameter('frequency', 5.0)
-        self.declare_parameter('dropoff_station_name', 'station')
-        self.declare_parameter('pickup_station_name', 'station')
+        self.IP_addres_PLC = self.config_yaml["ip"]
+        self.port_addres_PLC = self.config_yaml["port"]
+        self.timeout = self.config_yaml["time_out"]
+        self.machine_name = self.config_yaml["name"]
+        mode_operation = self.config_yaml["mode_operation"]
 
-        self.IP_addres_PLC = self.get_parameter('PLC_IP_address').value
-        self.port_addres_PLC = self.get_parameter('PLC_Port_address').value
-        self.timeout = self.get_parameter('timeout').value
-        self.frequency = self.get_parameter('frequency').value
-        self.dropoff_station_name = self.get_parameter('dropoff_station_name').value
-        self.pickup_station_name = self.get_parameter('pickup_station_name').value
-
+        if mode_operation != "combine":
+            return
 
         self.get_logger().info(f"PLC IP address: {self.IP_addres_PLC}")
         self.get_logger().info(f"PLC Port address: {self.port_addres_PLC}")
         self.get_logger().info(f"timeout: {self.timeout}")
-        self.get_logger().info(f"frequency: {self.frequency}")
-        self.get_logger().info(f"dropoff_station_name: {self.dropoff_station_name}")
-        self.get_logger().info(f"pickup_station_name: {self.pickup_station_name}")
 
-        self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._is_connected = False
-        while self._is_connected == False:
-            self._is_connected = self.socket_connect(self.IP_addres_PLC, self.port_addres_PLC)
+        self.pyPLC = Type3E("Q")
+        self.pyPLC.connect(self.IP_addres_PLC, self.port_addres_PLC)
 
-        # Device PLC:
+        # ------ Address all device -------:
         # Bits:
-        # MR600-602: DROPOFF:
-        #   600: alow input
-        #   601: alow output
-        #   602: Request dropoff
-        # MR603-605: PICKUP:
-        #   603: alow input
-        #   604: alow output        
-        #   605: Request pickup
-        self.machine_request_bit = ['MR',600,'',4]
-        self.request_dropoff_bit = ['MR',600,'',1]
-        self.allow_input_dropoff_bit = ['MR',601,'',1]
-        self.request_pickup_bit = ['MR',603,'',1]
-        self.allow_output_pickup_bit = ['MR',604,'',1]
+        # Dispenser:
+        self.dispenser_trigger_bit = self.config_yaml["bit"]["dispenser_trigger"]
 
-        self.dropoff_in_location = ['MR',606,'.U',1]
-        self.dropoff_out_location = ['MR',607,'.U',1]
-        self.pickup_in_location = ['MR',608,'.U',1]
-        self.pickup_out_location = ['MR',609,'.U',1]
-        self.pickup_station_state_bit = ['LR',1501,'',4]
-        self.dropoff_station_state_bit = ['LR',1511,'',2]
+        # Ingestor:
+        self.ingestor_trigger_bit = self.config_yaml["bit"]["ingestor_trigger"]
 
-        self.machine_error_bit = ['MR',2001,'.U',1]
+        # Registers:
+        # Machine data:
+        # 0: machine_mode (0: unknow, 1: human, 2: agv, 3: error, 4: emergency)
+        # 1: dispenser_state (0: idle, 1: accept_dockin, 2: robot_docked, 3: accept_dockout)
+        # 2: ingestor_state (0: idle, 1: accept_dockin, 2: robot_docked, 3: accept_dockout)
+        self.machine_data_reg = self.config_yaml["register"]["machine_data"]
 
-        # Callback groups:
-        # cb_group = ReentrantCallbackGroup()
+        # 1: idle, 2: accept_dockin, 3: robot_docked, 4: accept_dockout, 5: cancel, 6: robot_error
+        self.dispenser_control_reg = self.config_yaml["register"]["dispenser_control"]
+
+        # 1: idle, 2: accept_dockin, 3: robot_docked, 4: accept_dockout, 5: cancel, 6: robot_error
+        self.ingestor_control_reg = self.config_yaml["register"]["ingestor_control"]
 
         # Services server:
-        self.srv = self.create_service(MachineCart, "machine_server_rasp", self.machine_callback)
-
-        # Publishers:
-        self.deliveryRequestPub = self.create_publisher(DeliveryRequest, "/delivery_request_rasp",10)
-        self.machineStatePub = self.create_publisher(MachineState, "/machine_state_rasp", 10)
-
-        # Subcribers:
-        self.create_subscription(StationRequest,"/station_request_rasp",self.station_request_callback,1)
-        self.create_subscription(Empty,"/test_plc_pickup",self.test_callback,1)
-
-
-        # vars:
-        self.machine_mode = MachineMode.MODE_IDLE
-
-        # Timer:
-        timer_period = 1 / self.frequency
-        self.timer = self.create_timer(timer_period, self.timer_callback)
-
+        self.srv = self.create_service(
+            Machine, f"/{self.machine_name}_server", self.machine_request_callback
+        )
 
         self.get_logger().info("is running!!!!!!!!!!")
 
-
-    #"Connect to PLC:"
-    def socket_connect(self,host, port):
+    def machine_request_callback(self, request: Machine.Request, response: Machine.Response):
         try:
-            self.soc.connect((host, port))
-            self.get_logger().info("is connected to PLC success")
-            return True
-        except OSError:
-            self.get_logger().info("can't connect to PLC, will auto reconneting after 2s")
-            time.sleep(2)
-            return False
-        
+            self.get_logger().info(
+                f"Get request MACHINE:\n"
+                f"  request_type: {request.request_type}\n"
+                f"  request_mode: {request.request_mode}"
+            )
 
-    #"------------Read device-------------"
-    # deviceType: 'DM'
-    # deviceNo: 100
-    # format: .U: Unsigned 16-bit DEC
-    #         .S: Signed 16-bit DEC
-    #         .D: Unsigned 32-bit DEC
-    #         .L: Signed 32-bit DEC
-    #         .H: 16-bit HEX
-    # length: 3
-    # return: []
-    def read_device(self,deviceType: str = 'DM', deviceNo: int = 0, format: str = '', length: int = 1):
-        try:
-            if length > 1:
-                device = 'RDS' + ' ' + deviceType + str(deviceNo) + format + ' ' + str(length) + '\x0D'
+            response.success = False
+            machineData = self.pyPLC.batchread_wordunits(self.machine_data_reg, 3)
+            if request.request_type == Machine.Request.REQUEST_DISPENSER:
+                control_reg = self.dispenser_control_reg
+                trigger_bit = self.dispenser_trigger_bit
+            elif request.request_type == Machine.Request.REQUEST_INGESTOR:
+                control_reg = self.ingestor_control_reg
+                trigger_bit = self.ingestor_trigger_bit
             else:
-                device = 'RD' + ' ' + deviceType + str(deviceNo) + format + '\x0D' 
-            dataformat = device.encode()
-            self.soc.sendall(dataformat)
-            dataRecv = self.soc.recv(4096)
-            dataRecvDec = dataRecv.decode()
-            dataResp = dataRecvDec.split(' ')
-            # self.get_logger().warn(f'len data: {len(dataResp)}')
-            dataResp[len(dataResp)-1] = dataResp[len(dataResp)-1][:-2]
-            for i in range (0,len(dataResp)):
-                dataResp[i] = int(dataResp[i])
-            return dataResp
-        except Exception as e:
-            print(e)
-            return False
-        
+                self.get_logger().error(f"Invalid/Unsupport request_type!")
+                response.message = "Invalid/Unsupport request_type!"
+                return response
 
-    #"------------Write device-------------"
-    # deviceType: 'DM'
-    # deviceNo: 100
-    # format: .U: Unsigned 16-bit DEC
-    #         .S: Signed 16-bit DEC
-    #         .D: Unsigned 32-bit DEC
-    #         .L: Signed 32-bit DEC
-    #         .H: 16-bit HEX
-    # length: 3
-    # data: [1,2,3]
-    # return: []
-    def write_device(self, deviceType: str = 'R', deviceNo: int = 0, format: str = '', length: int = 1, data: list = []):
-        try:
-            if length != len(data):
-                print('write data error (length of data not correct!)')
-                return False
-            
-            if length > 1:
-                device = 'WRS' + ' ' + deviceType + str(deviceNo) + format + ' ' + str(length)
-                for i in data:
-                    device += (' ' + str(i))
-                device += '\x0D'
-            else:
-                device = 'WR' + ' ' + deviceType + str(deviceNo) + format + ' ' + str(data[0]) + '\x0D'
-            
-            dataformat = device.encode()
-            self.soc.sendall(dataformat)
-            dataRecv = self.soc.recv(1024)
-            dataRecvDec = dataRecv.decode()
-            dataResp = dataRecvDec.split(' ')
-            dataResp[len(dataResp)-1] = dataResp[len(dataResp)-1][:-2]
-            
-            if (dataResp[0]== 'OK'):
-                return True
-            return False
-        except Exception as e:
-            print(e)
-            return False
+            if machineData[1] != request.request_mode:
+                self.pyPLC.batchwrite_wordunits(control_reg, [request.request_mode + 1])
+                self.pyPLC.batchwrite_bitunits(trigger_bit, [1])
+                startTime = self.get_clock().now()
+                while rclpy.ok():
+                    if self.pyPLC.batchread_bitunits(trigger_bit, 1)[0]:
+                        break
 
-    def machine_callback(self, request: MachineCart.Request, response: MachineCart.Response):
-        try:
+                    durationTime = (self.get_clock().now() - startTime).nanoseconds * (10 ** (-9))
+                    if durationTime >= self.timeout:
+                        self.get_logger().error(f"Timeout machine reaches!")
+                        response.success = False
+                        response.message = "Machine timeout error!"
+                        return response
+                    time.sleep(0.5)
+
             response.success = True
-            self.get_logger().info(f"Get request machine mode: {request.mode}")
-            if request.mode == MachineCart.Request.MODE_PK_RELEASE:
-                self.machine_mode = MachineMode.MODE_PK_RELEASE
-                self.write_device(self.pickup_in_location[0],
-                                  self.pickup_in_location[1],
-                                  self.pickup_in_location[2],
-                                  self.pickup_in_location[3],
-                                  [1])
-                self.get_logger().info(f"writed bit RELEASE pickup to PLC success")
-                while not self.read_device(self.allow_output_pickup_bit[0],
-                                           self.allow_output_pickup_bit[1],
-                                           self.allow_output_pickup_bit[2],
-                                           self.allow_output_pickup_bit[3])[0]:
-                    self.get_logger().info(f"Waiting machine pickup RELEASE!")
-                    time.sleep(1.0)
-
-            elif request.mode == MachineCart.Request.MODE_PK_CLAMP:
-                self.write_device(self.pickup_out_location[0],
-                                  self.pickup_out_location[1],
-                                  self.pickup_out_location[2],
-                                  self.pickup_out_location[3],
-                                  [1])
-                self.get_logger().info(f"writed bit CLAMP pickup to PLC success")
-
-            elif request.mode == MachineCart.Request.MODE_DF_RELEASE:
-                self.machine_mode = MachineMode.MODE_DF_RELEASE
-                self.write_device(self.dropoff_in_location[0],
-                                  self.dropoff_in_location[1],
-                                  self.dropoff_in_location[2],
-                                  self.dropoff_in_location[3],
-                                  [1])
-                self.get_logger().info(f"writed bit RELEASE dropoff to PLC success")
-                while not self.read_device(self.allow_input_dropoff_bit[0],
-                                           self.allow_input_dropoff_bit[1],
-                                           self.allow_input_dropoff_bit[2],
-                                           self.allow_input_dropoff_bit[3])[0]:
-                    self.get_logger().info(f"Waiting machine dropoff RELEASE!")
-                    time.sleep(1.0)
-
-            elif request.mode == MachineCart.Request.MODE_DF_CLAMP:
-                self.write_device(self.dropoff_out_location[0],
-                                  self.dropoff_out_location[1],
-                                  self.dropoff_out_location[2],
-                                  self.dropoff_out_location[3],
-                                  [1])
-                self.get_logger().info(f"writed bit CLAMP dropoff to PLC success")
-            
-            else:
-                self.get_logger().error(f"Request charge mode not supported!")
-                response.success = False
-                response.message = "Request charge mode not supported!"
-                # self.machine_mode = MachineMode.MODE_IDLE
-                # return response
-            
-            self.machine_mode = MachineMode.MODE_IDLE
+            response.message = "Process success!"
             return response
-        
-        except:
+
+        except Exception as e:
+            self.get_logger().error(e)
             response.success = False
             response.message = "error undefined!"
             return response
 
-    def station_request_callback(self, msg: StationRequest):
-        stationName = msg.station_name
-        if stationName.find(self.dropoff_station_name) != -1:
-            idStation = int(stationName[len(self.dropoff_station_name):]) - 1
-            bitAddr = self.dropoff_station_state_bit[1] + idStation
-            if msg.mode.mode == StationMode.MODE_EMPTY:
-                self.write_device(self.dropoff_station_state_bit[0], bitAddr,
-                                  self.dropoff_station_state_bit[2], 1, [0])
-            elif msg.mode.mode == StationMode.MODE_FILLED:
-                self.write_device(self.dropoff_station_state_bit[0], bitAddr,
-                                  self.dropoff_station_state_bit[2], 1, [1])
-        elif stationName.find(self.pickup_station_name) != -1:
-            idStation = int(stationName[len(self.pickup_station_name):]) - 1
-            bitAddr = self.pickup_station_state_bit[1] + idStation
-            if msg.mode.mode == StationMode.MODE_EMPTY:
-                self.write_device(self.pickup_station_state_bit[0], bitAddr,
-                                  self.pickup_station_state_bit[2], 1, [0])
-            elif msg.mode.mode == StationMode.MODE_FILLED:
-                self.write_device(self.pickup_station_state_bit[0], bitAddr,
-                                  self.pickup_station_state_bit[2], 1, [1])
-        else:
-            self.get_logger().error("Not found station name match with dropoff or pickup station")
 
-    def timer_callback(self):
-        signalMachineData = self.read_device(self.machine_request_bit[0],
-                                            self.machine_request_bit[1],
-                                            self.machine_request_bit[2],
-                                            self.machine_request_bit[3])
-        try:
-            # Request dropoff:
-            if signalMachineData[0]:
-                stationState = self.read_device(self.pickup_station_state_bit[0],
-                                                self.pickup_station_state_bit[1],
-                                                self.pickup_station_state_bit[2],
-                                                self.pickup_station_state_bit[3])
-                # self.machine_mode = MachineMode.MODE_DF_RELEASE
-                i = 1
-                for state in stationState:
-                    if state:
-                        msgDR = DeliveryRequest()
-                        msgDR.request_id = str(uuid4())[0:8]
-                        msgDR.station_name = f"{self.pickup_station_name}{i}"
-                        msgDR.mode.mode = DeliveryMode.MODE_DROPOFF
-                        self.deliveryRequestPub.publish(msgDR)
-                        self.write_device(self.machine_request_bit[0],
-                                        self.machine_request_bit[1],
-                                        self.machine_request_bit[2],
-                                        1,[0])
-                        break
-                    i+=1
-            
-            # Request pickup:
-            elif signalMachineData[3]:
-                stationState = self.read_device(self.dropoff_station_state_bit[0],
-                                                self.dropoff_station_state_bit[1],
-                                                self.dropoff_station_state_bit[2],
-                                                self.dropoff_station_state_bit[3])
-                # self.machine_mode = MachineMode.MODE_PK_RELEASE
-                i = 1
-                for state in stationState:
-                    if not state:
-                        msgDR = DeliveryRequest()
-                        msgDR.request_id = str(uuid4())[0:8]
-                        msgDR.station_name = f"{self.dropoff_station_name}{i}"
-                        msgDR.mode.mode = DeliveryMode.MODE_PICKUP
-                        self.deliveryRequestPub.publish(msgDR)
-                        self.write_device(self.machine_request_bit[0],
-                                        self.machine_request_bit[1] + 3,
-                                        self.machine_request_bit[2],
-                                        1,[0])
-                        break
-                    i+=1
-            
-            msgMS = MachineState()
-            msgMS.mode.mode = self.machine_mode
-            self.machineStatePub.publish(msgMS)
-        
-        except:
-            self.get_logger().error(f"Data bit: {signalMachineData}")
+def main(argv=sys.argv):
+    rclpy.init(args=argv)
+    args_without_ros = rclpy.utilities.remove_ros_args(argv)
 
-    def test_callback(self, msg: Empty):
-        self.write_device(self.machine_request_bit[0],
-                          self.machine_request_bit[1],
-                          self.machine_request_bit[2],
-                          1,[1])
-        return
+    parser = argparse.ArgumentParser(
+        prog="machine_server", description="Configure and spin up the machine_server"
+    )
+    parser.add_argument(
+        "-c",
+        "--config_file",
+        type=str,
+        required=True,
+        help="Path to the config.yaml file",
+    )
+    args = parser.parse_args(args_without_ros[1:])
+    config_path = args.config_file
 
-def main(args=None):
-    rclpy.init(args=args)
-    machine_service = MachineService()
-    # executor = MultiThreadedExecutor()
-    # executor.add_node(machine_service)
+    # Load config yamls
+    with open(config_path, "r") as f:
+        config_yaml = yaml.safe_load(f)
 
-    # try:
-    #     machine_service.get_logger().info('Beginning machine_service node, shut down with CTRL-C')
-    #     executor.spin()
-    # except KeyboardInterrupt:
-    #     machine_service.get_logger().info('Keyboard interrupt, shutting down.\n')
-    # machine_service.soc.close()
-    # machine_service.destroy_node()
-    # rclpy.shutdown()
-
+    machine_service = MachineService(config_yaml=config_yaml["machine_info"])
     rclpy.spin(machine_service)
+
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    machine_service.soc.close()
+    machine_service.pyPLC.close()
     machine_service.destroy_node()
     rclpy.shutdown()
 
-if __name__ == '__main__':
-    main()
+
+if __name__ == "__main__":
+    main(sys.argv)

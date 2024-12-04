@@ -18,4 +18,6 @@ bool request_dropoff
 DeviceMode ingestor_mode
 string ingestor_request_id
 
+StationState[] station_states
+
 

@@ -88,7 +88,7 @@ typedef struct MachineFleetData_MachineRequest
 {
   char * machine_name;
   uint32_t request_type;
-  MachineFleetData_DeviceMode mode;
+  MachineFleetData_DeviceMode request_mode;
   char * request_id;
 } MachineFleetData_MachineRequest;
 
