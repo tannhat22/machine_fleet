@@ -130,7 +130,6 @@ messages::MachineState ClientNode::get_machine_state() {
   if (request_error) {
     machineState.machine_mode = messages::MachineState::MODE_ERROR;
   } else {
-    ReadLock machine_state_lock(machine_state_mutex);
     machineState.machine_mode = current_machine_state.machine_mode;
   }
   return machineState;
@@ -145,15 +144,23 @@ void ClientNode::publish_machine_state() {
     new_machine_state.ingestor_request_id = current_ingestor_request_id;
   }
 
-  machine_fleet::messages::MachineState machineState;
-  machineState = get_machine_state();
+  ReadLock machine_state_lock(machine_state_mutex);
+  {
+    machine_fleet::messages::MachineState machineState;
+    machineState = get_machine_state();
+    new_machine_state.machine_mode = machineState.machine_mode;
+    new_machine_state.request_pickup = current_machine_state.request_pickup;
+    new_machine_state.dispenser_mode.mode = current_machine_state.dispenser_mode.mode;
+    new_machine_state.request_dropoff = current_machine_state.request_dropoff;
+    new_machine_state.ingestor_mode.mode = current_machine_state.ingestor_mode.mode;
 
-  new_machine_state.machine_mode = machineState.machine_mode;
-  new_machine_state.request_pickup = machineState.request_pickup;
-  new_machine_state.dispenser_mode = machineState.dispenser_mode;
-  new_machine_state.request_dropoff = machineState.request_dropoff;
-  new_machine_state.ingestor_mode = machineState.ingestor_mode;
-  new_machine_state.station_states = machineState.station_states;
+    new_machine_state.station_states.clear();
+    for (size_t i = 0; i < current_machine_state.station_states.size(); ++i) {
+      new_machine_state.station_states.push_back(
+          messages::StationState{current_machine_state.station_states[i].station_name,
+                                 current_machine_state.station_states[i].mode});
+    }
+  }
 
   if (!fields.client->send_machine_state(new_machine_state)) {
     RCLCPP_WARN(get_logger(), "failed to send machine state");

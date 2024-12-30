@@ -15,7 +15,7 @@ def generate_launch_description():
             Node(
                 package="machine_server_ros2",
                 namespace="",
-                executable="machine_server",
+                executable="machine_server_mitsu",
                 name="machine_service",
                 output="screen",
                 emulate_tty=True,
@@ -25,7 +25,7 @@ def generate_launch_description():
             Node(
                 package="machine_server_ros2",
                 namespace="",
-                executable="machine_state_update",
+                executable="machine_state_update_mitsu",
                 name="machine_state_update",
                 output="screen",
                 emulate_tty=True,
@@ -42,11 +42,11 @@ def generate_launch_description():
                 respawn=False,
                 parameters=[
                     {
-                        "machine_name": "nqvlm104",
-                        "machine_state_topic": "/nqvlm104_machine_state",
-                        "station_request_topic": "/nqvlm104_station_request",
-                        "machine_service_name": "/nqvlm104_server",
-                        "dds_domain": 52,
+                        "machine_name": "station_clr_tp2",
+                        "machine_state_topic": "/station_clr_tp2_machine_state",
+                        "station_request_topic": "/station_clr_tp2_station_request",
+                        "machine_service_name": "/station_clr_tp2_server",
+                        "dds_domain": 53,
                         "dds_state_topic": "machine_state",
                         "dds_machine_request_topic": "machine_request",
                         "dds_station_request_topic": "station_request",

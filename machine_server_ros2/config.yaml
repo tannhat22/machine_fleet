@@ -1,7 +1,7 @@
 machine_info:
-  name: "nqvlm104"
-  mode_operation: "combine"
-  ip: "192.168.1.250"
+  name: "station_clr_tp2"
+  mode_operation: "station"
+  ip: "192.168.0.10"
   port: 8000
   port_machine_state: 8001
   time_out: 1000.0
@@ -15,9 +15,11 @@ machine_info:
     dispenser_trigger: 'MR300'
     ingestor_trigger: 'MR301'
     request_delivery: 'MR302'
-    station_state: 'MR303'
+    station_states: 'M501'
 
   stations:
-    station001: 'MR001'
-    station002: 'MR002'
-    station003: 'MR003'
+    clr001--dropoff: 'M501'
+    clr002--dropoff: 'M502'
+    clr003--dropoff: 'M503'
+    clr004--dropoff: 'M504'
+    clr005--dropoff: 'M505'

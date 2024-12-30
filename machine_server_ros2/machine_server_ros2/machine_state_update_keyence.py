@@ -13,7 +13,7 @@ class StationContext:
     _state: StationState
     _lock: threading.Lock
 
-    def __init__(self, name: str, type: int, headdevice: str) -> None:
+    def __init__(self, name: str, headdevice: str) -> None:
         self.name = name
         self.headdevice = headdevice
         self._state = StationState()
@@ -50,18 +50,18 @@ class MachineStateUpdate(Node):
 
         station_config = self.config_yaml["stations"]
         self.station_context_dict = {}
-        for _name, _config in station_config:
+        for _name, _config in station_config.items():
             self.station_context_dict.update({_name: StationContext(_name, _config)})
 
         # Variables:
         self.machine_name = self.config_yaml["name"]
         self.mode_operation = self.config_yaml["mode_operation"]
-        self.station_quantity = len(self.station_context_dict)
+        self.stations_quantity = len(self.station_context_dict)
 
         # ------ Address all device -------:
         # Bits:
         self.request_delivery_bit = self.config_yaml["bit"]["request_delivery"]
-        self.station_state_bit = self.config_yaml["bit"]["station_state"]
+        self.station_states_bits = self.config_yaml["bit"]["station_states"]
 
         ## Registers:
         # Machine data:
@@ -80,6 +80,7 @@ class MachineStateUpdate(Node):
             StationRequest,
             f"/{self.machine_name}_station_request",
             self.station_request_callback,
+            10,
         )
 
         timer_period = 1 / self.frequency
@@ -90,11 +91,14 @@ class MachineStateUpdate(Node):
     def station_request_callback(self, msg: StationRequest):
         station = self.station_context_dict.get(msg.station_name, None)
         if station is not None:
+            station.set_state(msg.mode)
             self.get_logger().info(f"station [{station.name}] receive request (mode: {msg.mode})")
             if msg.mode == StationRequest.MODE_EMPTY:
                 self.pyPLC.write_data(station.headdevice, "", 0)
             else:
                 self.pyPLC.write_data(station.headdevice, "", 1)
+        else:
+            self.get_logger().error(f"not found station [{msg.station_name}] in config!")
 
     def timer_callback(self):
         machineStateMsg = MachineState()
@@ -146,12 +150,12 @@ class MachineStateUpdate(Node):
             else:
                 machineStateMsg.request_dropoff = False
 
-        if self.station_quantity > 0:
+        if self.stations_quantity > 0:
             stationData = self.pyPLC.continuous_read_data(
-                self.station_state_bit, self.station_quantity, ""
+                self.station_states_bits, self.stations_quantity, ""
             )
             # Station states:
-            if len(stationData) == self.station_quantity:
+            if len(stationData) == self.stations_quantity:
                 i = 0
                 for station in self.station_context_dict.values():
                     if stationData[i]:
@@ -162,7 +166,7 @@ class MachineStateUpdate(Node):
                     i += 1
             else:
                 self.get_logger().error(
-                    f"length of station data ({len(stationData)}) not match witch station_quantity!"
+                    f"length of station data ({len(stationData)}) not match witch stations_quantity!"
                 )
 
         self.machineStatePub.publish(machineStateMsg)

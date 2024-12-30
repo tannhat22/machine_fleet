@@ -6,7 +6,6 @@ import rclpy
 from rclpy.node import Node
 
 from machine_fleet_msgs.srv import Machine
-from machine_fleet_msgs.msg import MachineRequest
 
 from .pymcprotocol import Type3E
 
@@ -14,18 +13,14 @@ from .pymcprotocol import Type3E
 class MachineService(Node):
     def __init__(self, config_yaml):
         super().__init__("machine_service")
-        self.config_yaml = config_yaml
 
         # Params:
         # Cấu hình các thông số quan trọng:
-        self.IP_addres_PLC = self.config_yaml["ip"]
-        self.port_addres_PLC = self.config_yaml["port"]
-        self.timeout = self.config_yaml["time_out"]
-        self.machine_name = self.config_yaml["name"]
-        mode_operation = self.config_yaml["mode_operation"]
-
-        if mode_operation != "combine":
-            return
+        self.IP_addres_PLC = config_yaml["ip"]
+        self.port_addres_PLC = config_yaml["port"]
+        self.timeout = config_yaml["time_out"]
+        self.machine_name = config_yaml["name"]
+        mode_operation = config_yaml["mode_operation"]
 
         self.get_logger().info(f"PLC IP address: {self.IP_addres_PLC}")
         self.get_logger().info(f"PLC Port address: {self.port_addres_PLC}")
@@ -37,26 +32,26 @@ class MachineService(Node):
         # ------ Address all device -------:
         # Bits:
         # Dispenser:
-        self.dispenser_trigger_bit = self.config_yaml["bit"]["dispenser_trigger"]
+        self.dispenser_trigger_bit = config_yaml["bit"]["dispenser_trigger"]
 
         # Ingestor:
-        self.ingestor_trigger_bit = self.config_yaml["bit"]["ingestor_trigger"]
+        self.ingestor_trigger_bit = config_yaml["bit"]["ingestor_trigger"]
 
         # Registers:
         # Machine data:
         # 0: machine_mode (0: unknow, 1: human, 2: agv, 3: error, 4: emergency)
         # 1: dispenser_state (0: idle, 1: accept_dockin, 2: robot_docked, 3: accept_dockout)
         # 2: ingestor_state (0: idle, 1: accept_dockin, 2: robot_docked, 3: accept_dockout)
-        self.machine_data_reg = self.config_yaml["register"]["machine_data"]
+        self.machine_data_reg = config_yaml["register"]["machine_data"]
 
         # 1: idle, 2: accept_dockin, 3: robot_docked, 4: accept_dockout, 5: cancel, 6: robot_error
-        self.dispenser_control_reg = self.config_yaml["register"]["dispenser_control"]
+        self.dispenser_control_reg = config_yaml["register"]["dispenser_control"]
 
         # 1: idle, 2: accept_dockin, 3: robot_docked, 4: accept_dockout, 5: cancel, 6: robot_error
-        self.ingestor_control_reg = self.config_yaml["register"]["ingestor_control"]
+        self.ingestor_control_reg = config_yaml["register"]["ingestor_control"]
 
         # Services server:
-        self.srv = self.create_service(
+        self.machine_srv = self.create_service(
             Machine, f"/{self.machine_name}_server", self.machine_request_callback
         )
 

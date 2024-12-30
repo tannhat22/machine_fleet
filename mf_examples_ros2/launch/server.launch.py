@@ -19,11 +19,11 @@ def generate_launch_description():
                 parameters=[
                     {
                         "fleet_name": "amr_vdm",
-                        "machine_names": ["nqvlm104"],
+                        "machine_names": ["station_clr_tp2"],
                         "fleet_state_topic": "fleet_machine_state",
                         "machine_request_topic": "machine_request",
                         "station_request_topic": "station_request",
-                        "dds_domain": 52,
+                        "dds_domain": 53,
                         "dds_machine_state_topic": "machine_state",
                         "dds_machine_request_topic": "machine_request",
                         "dds_station_request_topic": "station_request",
