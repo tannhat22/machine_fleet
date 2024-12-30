@@ -19,7 +19,7 @@ def generate_launch_description():
                 name="machine_service",
                 output="screen",
                 emulate_tty=True,
-                respawn=False,
+                respawn=True,
                 arguments=["-c", config_file],
             ),
             Node(
@@ -29,7 +29,7 @@ def generate_launch_description():
                 name="machine_state_update",
                 output="screen",
                 emulate_tty=True,
-                respawn=False,
+                respawn=True,
                 arguments=["-c", config_file],
             ),
             Node(
@@ -39,7 +39,7 @@ def generate_launch_description():
                 name="fleet_machine_client_node",
                 output="screen",
                 emulate_tty=True,
-                respawn=False,
+                respawn=True,
                 parameters=[
                     {
                         "machine_name": "station_clr_tp2",
