@@ -44,10 +44,10 @@ class MachineService(Node):
         # 2: ingestor_state (0: idle, 1: accept_dockin, 2: robot_docked, 3: accept_dockout)
         self.machine_data_reg = config_yaml["register"]["machine_data"]
 
-        # 1: idle, 2: accept_dockin, 3: robot_docked, 4: accept_dockout, 5: cancel, 6: robot_error
+        # 0: idle, 1: accept_dockin, 2: robot_docked, 3: accept_dockout, 4: cancel, 5: robot_error
         self.dispenser_control_reg = config_yaml["register"]["dispenser_control"]
 
-        # 1: idle, 2: accept_dockin, 3: robot_docked, 4: accept_dockout, 5: cancel, 6: robot_error
+        # 0: idle, 1: accept_dockin, 2: robot_docked, 3: accept_dockout, 4: cancel, 5: robot_error
         self.ingestor_control_reg = config_yaml["register"]["ingestor_control"]
 
         # Services server:
@@ -70,16 +70,18 @@ class MachineService(Node):
             if request.request_type == Machine.Request.REQUEST_DISPENSER:
                 control_reg = self.dispenser_control_reg
                 trigger_bit = self.dispenser_trigger_bit
+                workcell_state = machineData[1]  # dispenser_state
             elif request.request_type == Machine.Request.REQUEST_INGESTOR:
                 control_reg = self.ingestor_control_reg
                 trigger_bit = self.ingestor_trigger_bit
+                workcell_state = machineData[2]  # ingestor_state
             else:
                 self.get_logger().error(f"Invalid/Unsupport request_type!")
                 response.message = "Invalid/Unsupport request_type!"
                 return response
 
-            if machineData[1] != request.request_mode:
-                self.pyPLC.batchwrite_wordunits(control_reg, [request.request_mode + 1])
+            if workcell_state != request.request_mode:
+                self.pyPLC.batchwrite_wordunits(control_reg, [request.request_mode])
                 self.pyPLC.batchwrite_bitunits(trigger_bit, [1])
                 startTime = self.get_clock().now()
                 while rclpy.ok():
