@@ -33,13 +33,12 @@ class MachineStateUpdate(Node):
 
     def __init__(self, config_yaml):
         super().__init__("machine_state_update")
-        self.config_yaml = config_yaml
 
         # Params:
         # Cấu hình các thông số quan trọng:
-        self.IP_addres_PLC = self.config_yaml["ip"]
-        self.port_addres_PLC = self.config_yaml["port_machine_state"]
-        self.frequency = self.config_yaml["frequency"]
+        self.IP_addres_PLC = config_yaml["ip"]
+        self.port_addres_PLC = config_yaml["port_machine_state"]
+        self.frequency = config_yaml["frequency"]
 
         self.get_logger().info(f"PLC IP address: {self.IP_addres_PLC}")
         self.get_logger().info(f"PLC Port address: {self.port_addres_PLC}")
@@ -48,27 +47,30 @@ class MachineStateUpdate(Node):
         self.pyPLC = HostLink("KV")
         self.pyPLC.connect(self.IP_addres_PLC, self.port_addres_PLC)
 
-        station_config = self.config_yaml["stations"]
+        station_config = config_yaml["stations"]
         self.station_context_dict = {}
         for _name, _config in station_config.items():
             self.station_context_dict.update({_name: StationContext(_name, _config)})
 
         # Variables:
-        self.machine_name = self.config_yaml["name"]
-        self.mode_operation = self.config_yaml["mode_operation"]
+        self.machine_name = config_yaml["name"]
+        self.mode_operation = config_yaml["mode_operation"]
         self.stations_quantity = len(self.station_context_dict)
 
         # ------ Address all device -------:
         # Bits:
-        self.request_delivery_bit = self.config_yaml["bit"]["request_delivery"]
-        self.station_states_bits = self.config_yaml["bit"]["station_states"]
+        self.dispenser_delivery_req_bit = config_yaml["bit"]["dispenser_delivery_req"]
+        self.ingestor_delivery_req_bit = config_yaml["bit"]["ingestor_delivery_req"]
+        self.station_states_bits = config_yaml["bit"]["station_states"]
 
         ## Registers:
         # Machine data:
         # 0: machine_mode (0: unknow, 1: human, 2: agv, 3: error, 4: emergency)
         # 1: dispenser_state (0: idle, 1: accept_dockin, 2: robot_docked, 3: accept_dockout)
         # 2: ingestor_state (0: idle, 1: accept_dockin, 2: robot_docked, 3: accept_dockout)
-        self.machine_data_reg = self.config_yaml["register"]["machine_data"]
+        self.machine_mode_reg = config_yaml["register"]["machine_mode"]
+        self.dispenser_state_reg = config_yaml["register"]["dispenser_state"]
+        self.ingestor_state_reg = config_yaml["register"]["ingestor_state"]
 
         # Publishers:
         self.machineStatePub = self.create_publisher(
@@ -105,47 +107,51 @@ class MachineStateUpdate(Node):
         machineStateMsg.machine_name = self.machine_name
 
         if self.mode_operation == "combine":
-            machineData = self.pyPLC.continuous_read_data(self.machine_data_reg, 3, ".U")
-            requestDelivery = self.pyPLC.continuous_read_data(self.request_delivery_bit, 2, "")
+            machineMode = self.pyPLC.read_data(self.machine_mode_reg, ".U")
+            dispenser_state = self.pyPLC.read_data(self.dispenser_state_reg, ".U")
+            ingestor_state = self.pyPLC.read_data(self.ingestor_state_reg, ".U")
+
+            dispenserReq = self.pyPLC.read_data(self.dispenser_delivery_req_bit, "")
+            ingestorReq = self.pyPLC.read_data(self.ingestor_delivery_req_bit, "")
 
             # Machine mode:
-            if machineData[0] == 1:
+            if machineMode == 1:
                 machineStateMsg.machine_mode = MachineState.MODE_HUMAN
-            elif machineData[0] == 2:
+            elif machineMode == 2:
                 machineStateMsg.machine_mode = MachineState.MODE_AGV
-            elif machineData[0] == 3:
+            elif machineMode == 3:
                 machineStateMsg.machine_mode = MachineState.MODE_ERROR
-            elif machineData[0] == 4:
+            elif machineMode == 4:
                 machineStateMsg.machine_mode = MachineState.MODE_EMERGENCY
             else:
                 machineStateMsg.machine_mode = MachineState.MODE_UNKNOWN
 
             # dispenser_mode
-            if machineData[1] == 0:
+            if dispenser_state == 0:
                 machineStateMsg.dispenser_mode.mode = DeviceMode.MODE_IDLE
-            elif machineData[1] == 1:
+            elif dispenser_state == 1:
                 machineStateMsg.dispenser_mode.mode = DeviceMode.MODE_ACCEPT_DOCKIN
-            elif machineData[1] == 2:
+            elif dispenser_state == 2:
                 machineStateMsg.dispenser_mode.mode = DeviceMode.MODE_ROBOT_DOCKED_IN
-            elif machineData[1] == 3:
+            elif dispenser_state == 3:
                 machineStateMsg.dispenser_mode.mode = DeviceMode.MODE_ACCEPT_DOCKOUT
 
             # ingestor_mode
-            if machineData[2] == 0:
+            if ingestor_state == 0:
                 machineStateMsg.ingestor_mode.mode = DeviceMode.MODE_IDLE
-            elif machineData[2] == 1:
+            elif ingestor_state == 1:
                 machineStateMsg.ingestor_mode.mode = DeviceMode.MODE_ACCEPT_DOCKIN
-            elif machineData[2] == 2:
+            elif ingestor_state == 2:
                 machineStateMsg.ingestor_mode.mode = DeviceMode.MODE_ROBOT_DOCKED_IN
-            elif machineData[2] == 3:
+            elif ingestor_state == 3:
                 machineStateMsg.ingestor_mode.mode = DeviceMode.MODE_ACCEPT_DOCKOUT
 
-            if requestDelivery[0]:
+            if dispenserReq:
                 machineStateMsg.request_pickup = True
             else:
                 machineStateMsg.request_pickup = False
 
-            if requestDelivery[1]:
+            if ingestorReq:
                 machineStateMsg.request_dropoff = True
             else:
                 machineStateMsg.request_dropoff = False

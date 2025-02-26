@@ -29,26 +29,46 @@ class MachineService(Node):
         self.pyPLC = Type3E("Q")
         self.pyPLC.connect(self.IP_addres_PLC, self.port_addres_PLC)
 
+        # Việc cần làm là viết một bộ convert headdevice cho plc keyence khi giao tiếp theo mcprotocol
+        convert_devicename = {
+            # "R": "X",
+            # "B": "B",
+            # "MR": "M",
+            "LR": "L",
+            # "CR": "SM",
+            # "CM": "SD",
+            "DM": "D",
+            # "EM": "D",
+            # "FM": "R",
+            # "ZF": "ZR",
+            # "ZF": "ZR",
+            # "W": "W",
+        }
+
         # ------ Address all device -------:
         # Bits:
         # Dispenser:
         self.dispenser_trigger_bit = config_yaml["bit"]["dispenser_trigger"]
+        # self.dispenser_trigger_bit = f"{convert_devicename[config_yaml["bit"]["dispenser_trigger"][0:2]]}{config_yaml["bit"]["dispenser_trigger"][2:]}"
 
         # Ingestor:
         self.ingestor_trigger_bit = config_yaml["bit"]["ingestor_trigger"]
+        # self.ingestor_trigger_bit = f"{convert_devicename[config_yaml["bit"]["ingestor_trigger"][0:2]]}{config_yaml["bit"]["ingestor_trigger"][2:]}"
 
         # Registers:
         # Machine data:
         # 0: machine_mode (0: unknow, 1: human, 2: agv, 3: error, 4: emergency)
         # 1: dispenser_state (0: idle, 1: accept_dockin, 2: robot_docked, 3: accept_dockout)
         # 2: ingestor_state (0: idle, 1: accept_dockin, 2: robot_docked, 3: accept_dockout)
-        self.machine_data_reg = config_yaml["register"]["machine_data"]
+        self.machine_mode_reg = f"{convert_devicename[config_yaml["register"]["machine_mode"][0:2]]}{config_yaml["register"]["machine_mode"][2:]}"
+        self.dispenser_state_reg = f"{convert_devicename[config_yaml["register"]["dispenser_state"][0:2]]}{config_yaml["register"]["dispenser_state"][2:]}"
+        self.ingestor_state_reg = f"{convert_devicename[config_yaml["register"]["ingestor_state"][0:2]]}{config_yaml["register"]["ingestor_state"][2:]}"
 
         # 0: idle, 1: accept_dockin, 2: robot_docked, 3: accept_dockout, 4: cancel, 5: robot_error
-        self.dispenser_control_reg = config_yaml["register"]["dispenser_control"]
+        self.dispenser_control_reg = f"{convert_devicename[config_yaml["register"]["dispenser_control"][0:2]]}{config_yaml["register"]["dispenser_control"][2:]}"
 
         # 0: idle, 1: accept_dockin, 2: robot_docked, 3: accept_dockout, 4: cancel, 5: robot_error
-        self.ingestor_control_reg = config_yaml["register"]["ingestor_control"]
+        self.ingestor_control_reg = f"{convert_devicename[config_yaml["register"]["ingestor_control"][0:2]]}{config_yaml["register"]["ingestor_control"][2:]}"
 
         # Services server:
         self.machine_srv = self.create_service(
@@ -62,26 +82,28 @@ class MachineService(Node):
             self.get_logger().info(
                 f"Get request MACHINE:\n"
                 f"  request_type: {request.request_type}\n"
-                f"  request_mode: {request.request_mode}"
+                f"  request_mode: {request.request_mode.mode}"
             )
 
             response.success = False
-            machineData = self.pyPLC.batchread_wordunits(self.machine_data_reg, 3)
+            dispenserState = self.pyPLC.batchread_wordunits(self.dispenser_state_reg, 1)[0]
+            ingestorState = self.pyPLC.batchread_wordunits(self.ingestor_state_reg, 1)[0]
+
             if request.request_type == Machine.Request.REQUEST_DISPENSER:
                 control_reg = self.dispenser_control_reg
                 trigger_bit = self.dispenser_trigger_bit
-                workcell_state = machineData[1]  # dispenser_state
+                workcell_state = dispenserState  # dispenser_state
             elif request.request_type == Machine.Request.REQUEST_INGESTOR:
                 control_reg = self.ingestor_control_reg
                 trigger_bit = self.ingestor_trigger_bit
-                workcell_state = machineData[2]  # ingestor_state
+                workcell_state = ingestorState  # ingestor_state
             else:
                 self.get_logger().error(f"Invalid/Unsupport request_type!")
                 response.message = "Invalid/Unsupport request_type!"
                 return response
 
-            if workcell_state != request.request_mode:
-                self.pyPLC.batchwrite_wordunits(control_reg, [request.request_mode])
+            if workcell_state != request.request_mode.mode:
+                self.pyPLC.batchwrite_wordunits(control_reg, [request.request_mode.mode])
                 self.pyPLC.batchwrite_bitunits(trigger_bit, [1])
                 startTime = self.get_clock().now()
                 while rclpy.ok():

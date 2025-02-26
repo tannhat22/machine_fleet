@@ -1,25 +1,28 @@
 machine_info:
-  name: "station_clr_tp2"
-  mode_operation: "station"
-  ip: "192.168.0.10"
-  port: 8000
-  port_machine_state: 8001
+  name: "nqvlm104"
+  mode_operation: "combine"
+  ip: "192.168.1.1"
+  port: 5000
+  port_machine_state: 8501
   time_out: 1000.0
   frequency: 2.0
   register:
-    machine_data: 'DM300'
-    dispenser_control: 'DM310'
-    ingestor_control: 'DM311'
-    request_type: 'D312'
+    machine_mode: 'DM693'
+    ingestor_state: 'DM694'
+    ingestor_control: 'DM696'
+    dispenser_state: 'DM695'
+    dispenser_control: 'DM697'
   bit:
-    dispenser_trigger: 'MR300'
-    ingestor_trigger: 'MR301'
-    request_delivery: 'MR302'
-    station_states: 'M501'
+    ingestor_trigger: "M109" #'MR613'
+    dispenser_trigger: "M110" #'MR614'
+    ingestor_delivery_req: 'MR600'
+    dispenser_delivery_req: 'MR603'
+    station_states: 'LR1501'
 
   stations:
-    clr001--dropoff: 'M501'
-    clr002--dropoff: 'M502'
-    clr003--dropoff: 'M503'
-    clr004--dropoff: 'M504'
-    clr005--dropoff: 'M505'
+    station001--pickup: 'LR1501'
+    station002--pickup: 'LR1502'
+    station003--pickup: 'LR1503'
+    station004--pickup: 'LR1504'
+    station001--dropoff: 'LR1505'
+    station002--dropoff: 'LR1506'

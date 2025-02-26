@@ -59,8 +59,15 @@ def main(argv=sys.argv):
     msg = MachineRequest()
     msg.time = node.get_clock().now().to_msg()
     msg.machine_name = args.machine_name
-    msg.request_type = args.request_type
     msg.request_id = args.request_id
+
+    if args.request_type == "dispenser":
+        msg.request_type = MachineRequest.REQUEST_DISPENSER
+    elif args.request_type == "ingestor":
+        msg.request_type = MachineRequest.REQUEST_INGESTOR
+    else:
+        print("unrecognized request type, only support dispenser or ingestor please!")
+        return
 
     if args.mode == "mode":
         print("Please insert desired mode: [0, 1, 2, 3, 4 ,5]")
