@@ -71,6 +71,8 @@ void convert(const MachineFleetData_MachineRequest &_input, MachineRequest &_out
 }
 
 void convert(const MachineState &_input, MachineFleetData_MachineState &_output) {
+  _output.sec = _input.sec;
+  _output.nanosec = _input.nanosec;
   _output.machine_name = common::dds_string_alloc_and_copy(_input.machine_name);
   _output.machine_mode = _input.machine_mode;
   _output.request_pickup = _input.request_pickup;
@@ -90,6 +92,8 @@ void convert(const MachineState &_input, MachineFleetData_MachineState &_output)
 }
 
 void convert(const MachineFleetData_MachineState &_input, MachineState &_output) {
+  _output.sec = _input.sec;
+  _output.nanosec = _input.nanosec;
   _output.machine_name = std::string(_input.machine_name);
   _output.machine_mode = _input.machine_mode;
   _output.request_pickup = _input.request_pickup;

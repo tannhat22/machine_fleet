@@ -44,6 +44,8 @@ void to_ros_message(const messages::StationState &_in_msg,
 
 void to_ros_message(const messages::MachineState &_in_msg,
                     machine_fleet_msgs::msg::MachineState &_out_msg) {
+  _out_msg.machine_time.sec = _in_msg.sec;
+  _out_msg.machine_time.nanosec = _in_msg.nanosec;
   _out_msg.machine_name = _in_msg.machine_name;
   _out_msg.machine_mode = _in_msg.machine_mode;
   _out_msg.request_pickup = _in_msg.request_pickup;

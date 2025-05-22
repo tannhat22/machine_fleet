@@ -136,7 +136,10 @@ messages::MachineState ClientNode::get_machine_state() {
 }
 
 void ClientNode::publish_machine_state() {
+  rclcpp::Time now = get_clock()->now();
   messages::MachineState new_machine_state;
+  new_machine_state.sec = static_cast<int32_t>(now.nanoseconds() / 1000000000);
+  new_machine_state.nanosec = static_cast<uint32_t>(now.nanoseconds() % 1000000000);
   new_machine_state.machine_name = client_node_config.machine_name;
   {
     ReadLock request_id_lock(request_id_mutex);

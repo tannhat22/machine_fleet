@@ -94,6 +94,10 @@ const dds_topic_descriptor_t MachineFleetData_MachineRequest_desc = {
     "name=\"request_id\"><String/></Member></Struct></Module></MetaData>"};
 
 static const uint32_t MachineFleetData_MachineState_ops[] = {
+    DDS_OP_ADR | DDS_OP_TYPE_4BY | DDS_OP_FLAG_SGN,
+    offsetof(MachineFleetData_MachineState, sec),
+    DDS_OP_ADR | DDS_OP_TYPE_4BY,
+    offsetof(MachineFleetData_MachineState, nanosec),
     DDS_OP_ADR | DDS_OP_TYPE_STR,
     offsetof(MachineFleetData_MachineState, machine_name),
     DDS_OP_ADR | DDS_OP_TYPE_4BY,
@@ -128,12 +132,13 @@ const dds_topic_descriptor_t MachineFleetData_MachineState_desc = {
     0u,
     "MachineFleetData::MachineState",
     NULL,
-    14,
+    16,
     MachineFleetData_MachineState_ops,
     "<MetaData version=\"1.0.0\"><Module name=\"MachineFleetData\"><Struct "
     "name=\"DeviceMode\"><Member name=\"mode\"><ULong/></Member></Struct><Struct "
     "name=\"StationState\"><Member name=\"station_name\"><String/></Member><Member "
     "name=\"mode\"><ULong/></Member></Struct><Struct name=\"MachineState\"><Member "
+    "name=\"sec\"><Long/></Member><Member name=\"nanosec\"><ULong/></Member><Member "
     "name=\"machine_name\"><String/></Member><Member "
     "name=\"machine_mode\"><ULong/></Member><Member "
     "name=\"request_pickup\"><Boolean/></Member><Member name=\"dispenser_mode\"><Type "

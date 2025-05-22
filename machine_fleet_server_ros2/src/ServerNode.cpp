@@ -205,7 +205,7 @@ void ServerNode::publish_fleet_state() {
   for (const auto &it : machine_states) {
     const auto fleet_frame_ms = it.second;
     machine_fleet_msgs::msg::MachineState rmf_frame_ms;
-
+    rmf_frame_ms.machine_time = fleet_frame_ms.machine_time;
     rmf_frame_ms.machine_name = fleet_frame_ms.machine_name;
     rmf_frame_ms.machine_mode = fleet_frame_ms.machine_mode;
     rmf_frame_ms.request_pickup = fleet_frame_ms.request_pickup;

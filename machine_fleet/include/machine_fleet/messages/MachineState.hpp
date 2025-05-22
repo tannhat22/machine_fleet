@@ -26,8 +26,9 @@
 namespace machine_fleet {
 namespace messages {
 
-struct MachineState
-{
+struct MachineState {
+  int32_t sec;
+  uint32_t nanosec;
   std::string machine_name;
 
   uint8_t machine_mode;

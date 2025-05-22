@@ -59,6 +59,8 @@ module MachineFleetData
   };
   struct MachineState
   {
+    long sec;
+    unsigned long nanosec;
     string machine_name;
     unsigned long machine_mode;
     boolean request_pickup;

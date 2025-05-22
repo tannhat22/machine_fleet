@@ -117,6 +117,8 @@ typedef struct MachineFleetData_MachineState_station_states_seq
 
 typedef struct MachineFleetData_MachineState
 {
+  int32_t sec;
+  uint32_t nanosec;
   char * machine_name;
   uint32_t machine_mode;
   bool request_pickup;
